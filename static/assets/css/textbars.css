@@ -1,0 +1,4 @@
+#originalContent, #summaryContent {
+    height: 125px;
+    max-height: available;
+}

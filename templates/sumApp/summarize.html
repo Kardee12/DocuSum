@@ -1,0 +1,71 @@
+{% extends "sumApp/base.html" %}
+{% load static %}
+
+{% block title %}Summarize It - DocuSum{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label form-label" for="{{ form.upload_file.id_for_label }}"><strong>Upload
+                            file:</strong></label>
+                        {{ form.upload_file }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label form-label" for="{{ form.text_input.id_for_label }}"><strong>Text
+                            input:</strong></label>
+                        {{ form.text_input }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label form-label" for="{{ form.summary_model.id_for_label }}"><strong>Summary
+                            model:</strong></label>
+                        {{ form.summary_model }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label form-label" for="{{ form.summary_length.id_for_label }}"><strong>Summary
+                            length:</strong></label>
+                        {{ form.summary_length }}
+                    </div>
+                    <button class="btn btn-primary" type="submit" id="submitButton">Summarize</button>
+                </form>
+
+                {% if form.errors and form.non_field_errors %}
+                    <div class="alert alert-danger mt-3">
+                        <strong>Validation Error:</strong>
+                        <ul>
+                            {% for error in form.non_field_errors %}
+                                <small>{{ error|escape }}</small>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                {% if success_message %}
+                    <div class="alert alert-success mt-3">{{ success_message }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label form-label" for="originalContent"><strong>Text</strong></label>
+                    <div class="border rounded border-3 border p-2" id="originalContent" style="height: 200px; overflow-y: auto;">
+                        <span>{{ original_text }}</span>
+                    </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label form-label" for="summaryContent"><strong>Summary</strong></label>
+                    <div class="border rounded border-3 border p-2" id="summaryContent" style="height: 200px; overflow-y: auto;">
+                        <span>{{ summary }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/css/textbars.css' %}">
+{% endblock %}

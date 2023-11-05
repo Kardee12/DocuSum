@@ -1,0 +1,281 @@
+{% extends "sumApp/base.html" %}
+{% load static %}
+
+{% block title %}Workspace - DocuSum{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="card-title"><strong>Workspace</strong></h3>
+                &nbsp
+                <div class="accordion" role="tablist" id="taskAccordion" style="height: 853.844px;">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab" id="headingSummarize">
+                            <button class="accordion-button collapsed collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSummarize" aria-expanded="false"
+                                    aria-controls="collapseSummarize"> Summarize
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-1 item-1" role="tabpanel"
+                             data-bs-parent="#taskAccordion" aria-labelledby="headingSummarize" id="collapseSummarize">
+                            <div class="accordion-body">
+                                <form method="post" enctype="multipart/form-data" id="sumForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        {{ sumForm.uploadFile }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sumForm.textInput }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sumForm.model }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sumForm.minTokens }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sumForm.maxTokens }}
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Button group">
+                                        <button class="btn btn-outline-danger border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="reset">Clear
+                                        </button>
+                                        <button class="btn btn-outline-primary border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="submit" name="action" value="summarize">Summarize
+                                        </button>
+                                        <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="button">Download
+                                        </button>
+                                    </div>
+                                </form>
+                                {% if sumForm.errors and sumForm.non_field_errors %}
+                                    <div class="alert alert-danger mt-3">
+                                        <strong>Validation Error:</strong>
+                                        <ul>
+                                            {% for error in sumForm.non_field_errors %}
+                                                <small>{{ error|escape }}</small>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                {% if not sumForm.errors and sumSuccessMessage %}
+                                    <div class="alert alert-success mt-3">{{ sumSuccessMessage }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab" id="headingTranslate">
+                            <button class="accordion-button collapsed collapsed collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseTranslate" aria-expanded="false"
+                                    aria-controls="collapseTranslate"> Translate
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-2 item-2" role="tabpanel"
+                             data-bs-parent="#taskAccordion" aria-labelledby="headingTranslate" id="collapseTranslate">
+                            <div class="accordion-body">
+                                <form method="post" enctype="multipart/form-data" id="tranForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        {{ tranForm.uploadFile }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ tranForm.textInput }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ tranForm.model }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ tranForm.langTTF }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ tranForm.langTTT }}
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Button group">
+                                        <button class="btn btn-outline-danger border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="reset">Clear
+                                        </button>
+                                        <button class="btn btn-outline-primary border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="submit" name="action" value="translate">Translate
+                                        </button>
+                                        <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="button">Download
+                                        </button>
+                                    </div>
+                                </form>
+                                {% if tranForm.errors and tranForm.non_field_errors %}
+                                    <div class="alert alert-danger mt-3">
+                                        <strong>Validation Error:</strong>
+                                        <ul>
+                                            {% for error in tranForm.non_field_errors %}
+                                                <small>{{ error|escape }}</small>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                {% if not tranForm.errors and trSuccessMessage %}
+                                    <div class="alert alert-success mt-3">{{ trSuccessMessage }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab" id="headingQuestion">
+                            <button class="accordion-button collapsed collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseQuestion" aria-expanded="false"
+                                    aria-controls="collapseQuestion"> Question
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-3" role="tabpanel" data-bs-parent="#taskAccordion"
+                             aria-labelledby="headingQuestion" id="collapseQuestion">
+                            <div class="accordion-body">
+                                <form method="post" enctype="multipart/form-data" id="quesForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        {{ quesForm.uploadFile }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ quesForm.textInput }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ quesForm.model }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ quesForm.question }}
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Button group">
+                                        <button class="btn btn-outline-danger border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="reset">Clear
+                                        </button>
+                                        <button class="btn btn-outline-primary border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="submit" name="action" value="ask">Ask
+                                        </button>
+                                        <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="button">Download
+                                        </button>
+                                    </div>
+                                </form>
+                                {% if quesForm.errors and quesForm.non_field_errors %}
+                                    <div class="alert alert-danger mt-3">
+                                        <strong>Validation Error:</strong>
+                                        <ul>
+                                            {% for error in quesForm.non_field_errors %}
+                                                <small>{{ error|escape }}</small>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                {% if not quesForm.errors and qaSuccessMessage %}
+                                    <div class="alert alert-success mt-3">{{ qaSuccessMessage }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" role="tab" id="headingSentiment">
+                            <button class="accordion-button collapsed collapsed collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseSentiment" aria-expanded="false"
+                                    aria-controls="collapseSentiment"> Sentiment Analysis
+                            </button>
+                        </h2>
+                        <div class="accordion-collapse collapse item-4 item-3" role="tabpanel"
+                             data-bs-parent="#taskAccordion" aria-labelledby="headingSentiment" id="collapseSentiment">
+                            <div class="accordion-body">
+                                <form method="post" enctype="multipart/form-data" id="sentiForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        {{ sentiForm.uploadFile }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sentiForm.textInput }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sentiForm.model }}
+                                    </div>
+                                    <div class="mb-3">
+                                        {{ sentiForm.question }}
+                                    </div>
+                                    <div class="btn-group" role="group" aria-label="Button group">
+                                        <button class="btn btn-outline-danger border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="reset">Clear
+                                        </button>
+                                        <button class="btn btn-outline-primary border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="submit" name="action" value="sentiment">Submit
+                                        </button>
+                                        <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
+                                                type="button">Download
+                                        </button>
+                                    </div>
+                                </form>
+                                {% if sentiForm.errors and sentiForm.non_field_errors %}
+                                    <div class="alert alert-danger mt-3">
+                                        <strong>Validation Error:</strong>
+                                        <ul>
+                                            {% for error in sentiForm.non_field_errors %}
+                                                <small>{{ error|escape }}</small>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                {% if not sentiForm.errors and aaSuccessMessage %}
+                                    <div class="alert alert-success mt-3">{{ saSuccessMessage }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title"><strong>Original</strong></h4>
+                        <div id="original" class="border rounded p-3" style="height: 250px;overflow-y: auto;"><span
+                                id="original">{{ original }}</span></div>
+                    </div>
+                    <div class="card-body">
+                        <h4 class="card-title"><strong>Results</strong></h4>
+                        <div id="result" class="border rounded p-3" style="height: 300px;overflow-y: auto;"><span
+                                id="result">{{ result }}</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% block scripts %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                function toggleAccordion(id) {
+                    var collapseElement = document.getElementById(id);
+                    if (collapseElement) {
+                        var bsCollapse = new bootstrap.Collapse(collapseElement, {
+                            toggle: true
+                        });
+                    }
+                }
+
+                var lastActiveAccordion = "{{ active }}";
+                if (lastActiveAccordion) {
+                    toggleAccordion('collapse' + lastActiveAccordion.charAt(0).toUpperCase() + lastActiveAccordion.slice(1));
+                }
+            });
+        </script>
+        <script>
+            function handleModelChange() {
+                var modelSelect = document.getElementById("id_model");
+                var minTokensInput = document.getElementById("id_minTokens");
+                var maxTokensInput = document.getElementById("id_maxTokens");
+                var shouldShowTokens = modelSelect.value !== 'FLAN-T5';
+
+                minTokensInput.required = shouldShowTokens;
+                maxTokensInput.required = shouldShowTokens;
+
+                minTokensInput.closest('.mb-3').style.display = shouldShowTokens ? 'block' : 'none';
+                maxTokensInput.closest('.mb-3').style.display = shouldShowTokens ? 'block' : 'none';
+            }
+
+            document.getElementById("id_model").addEventListener('change', handleModelChange);
+            document.addEventListener('DOMContentLoaded', handleModelChange);
+        </script>
+    {% endblock %}
+{% endblock %}

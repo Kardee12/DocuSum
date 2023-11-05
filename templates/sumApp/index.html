@@ -1,0 +1,38 @@
+{% extends "sumApp/base.html" %}
+{% load static %}
+
+{% block title %}Home - DocuSum{% endblock %}
+
+{% block content %}
+<header class="bg-primary-gradient" style="background: var(--bs-white);">
+    <div class="container pt-4 pt-xl-5" style="background: var(--bs-body-bg);">
+        <div class="col-md-8 col-xl-6 text-center text-md-start mx-auto">
+            <div class="text-center">
+                <p class="fw-bold text-success mb-2"></p>
+                <h1 class="fw-bold">Your Shortcut to Document Summarization</h1>
+            </div>
+        </div>
+        <div class="col-12 col-lg-10 col-xl-7 offset-xl-0 mx-auto">
+            <div class="position-relative" style="display: flex; flex-wrap: wrap; justify-content: flex-end;">
+                <div style="position: relative; flex: 0 0 45%; transform: translate3d(-15%, 35%, 0);">
+                    <img class="img-fluid" data-bss-parallax="" data-bss-parallax-speed="0.8"
+                        src="{% static 'assets/img/designs/Firefly Minimalist 3d rendering of a folder standing up with a tan background facing the left 272.jpg' %}"
+                        loading="auto">
+                </div>
+                <div style="position: relative; flex: 0 0 45%; transform: translate3d(-5%, 20%, 0);">
+                    <img class="img-fluid" data-bss-parallax="" data-bss-parallax-speed="0.4"
+                        src="{% static 'assets/img/designs/Firefly Minimalist 3d rendering of a newspaper standing up with a light green background 45575.jpg' %}"
+                        loading="auto">
+                </div>
+                <div style="position: relative; flex: 0 0 60%; transform: translate3d(0, 0%, 0);">
+                    <img class="img-fluid" data-bss-parallax="" data-bss-parallax-speed="0.25"
+                        src="{% static 'assets/img/designs/Firefly Minimalist 3d rendering of a briefcase standing up with a light blue background 22601.jpg' %}"
+                        loading="auto">
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+    <div class="col-12 text-center mt-4"><a class="btn btn-outline-success" role="button" href="summarize-cu.html">Analyze your document --&gt;</a></div>
+<div class="container py-5"></div>
+{% endblock %}
