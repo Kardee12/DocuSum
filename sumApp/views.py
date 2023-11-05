@@ -6,11 +6,6 @@ from .service import TextSummarization, TextExtractor, TextTranslation, Question
 def index(request):
     return render(request, "sumApp/index.html")
 
-
-def about(request):
-    return render(request, "sumApp/about.html")
-
-
 def workspace(request):
     sumForm = SummarizationForm()
     tranForm = TranslationForm()
