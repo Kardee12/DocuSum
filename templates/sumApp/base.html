@@ -1,10 +1,12 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="google-signin-client_id" content="121660578971-gr82o3abcdm3642pns5qum766bpfuucv.apps.googleusercontent.com">
     <title>{% block title %}DocuSum{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon-32x32.png' %}">
     <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="{% static 'assets/img/apple-touch-icon.png' %}">
@@ -16,6 +18,8 @@
     <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800&amp;display=swap">
     <link rel="stylesheet" href="{% static 'assets/css/Navbar-Right-Links-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/textbars.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/gButton.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -26,6 +30,14 @@
                     </svg></span><span>DocuSum</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-2"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-2">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item ">
+                        <div id="signin-button" class="text-center">
+                          <a href="{% provider_login_url 'google' method='oauth2' %}" class="btn btn-google">
+                            <img src="{% static 'assets/img/google_icon.svg' %}" alt="Google" class="google-logo">
+                            Sign in with Google
+                          </a>
+                        </div>
+                    </li>
 {#                    <li class="nav-item" data-bs-spy="scroll" data-bs-smooth-scroll="true"><a class="nav-link active" href="{% url 'index' %}"><strong>Home</strong></a></li>#}
 {#                    <li class="nav-item" data-bs-spy="scroll" data-bs-smooth-scroll="true"><a class="nav-link active" href="{% url 'workspace' %}"><strong>Analyze</strong></a></li>#}
                 </ul>
@@ -68,6 +80,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'assets/js/bold-and-bright.js' %}"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+{#    <script>#}
+{#      function onSignIn(googleUser) {#}
+{#        var id_token = googleUser.getAuthResponse().id_token;#}
+{##}
+{#        // Send the token to your server with an AJAX request#}
+{#        // Here, we will submit it to Django AllAuth via a hidden form#}
+{#        var form = document.createElement('form');#}
+{#        form.setAttribute('method', 'POST');#}
+{#        form.setAttribute('action', '{{% provider_login_url 'google' %}}'); // This URL will be the backend endpoint for AllAuth#}
+{##}
+{#        var tokenInput = document.createElement('input');#}
+{#        tokenInput.setAttribute('type', 'hidden');#}
+{#        tokenInput.setAttribute('name', 'access_token');#}
+{#        tokenInput.setAttribute('value', id_token);#}
+{##}
+{#        var csrfInput = document.createElement('input');#}
+{#        csrfInput.setAttribute('type', 'hidden');#}
+{#        csrfInput.setAttribute('name', 'csrfmiddlewaretoken');#}
+{#        csrfInput.setAttribute('value', '{{ csrf_token }}');#}
+{##}
+{#        form.appendChild(tokenInput);#}
+{#        form.appendChild(csrfInput);#}
+{#        document.body.appendChild(form);#}
+{#        form.submit();#}
+{#      }#}
+{#    </script>#}
     {% block extra_scripts %}{% endblock %}
 </body>
 

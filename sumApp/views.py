@@ -1,10 +1,28 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from DocuSum import settings
 from .forms import TranslationForm, SummarizationForm, QuestionForm, SentimentAnalysisForm
 from .service import TextSummarization, TextExtractor, TextTranslation, QuestionAnswering, SentimentAnalysis
+from django.http import HttpResponse
 
 
 def index(request):
-    return render(request, "sumApp/index.html")
+    socialaccount_google_login_by_token = settings.SOCIAL_AUTH_GOOGLE_CLIENT_ID
+    context = {
+        'socialaccount_google_login_by_token': socialaccount_google_login_by_token,
+    }
+    return render(request, "sumApp/index.html", context)
+
+
+def loginRedirect(request):
+    # Your logic here, e.g., checking the user profile or redirecting to a dashboard
+    return redirect('workspace')
+
+
+
+
+
+
+
 
 def workspace(request):
     sumForm = SummarizationForm()
@@ -16,7 +34,7 @@ def workspace(request):
     sumSuccessMessage = ""
     trSuccessMessage = ""
     qaSuccessMessage = ""
-    saSuccessMessage =""
+    saSuccessMessage = ""
     active = "summarize"
     if request.method == 'POST' and 'action' in request.POST:
         if request.POST['action'] == 'summarize':
@@ -120,3 +138,5 @@ def workspace(request):
     }
 
     return render(request, 'sumApp/workspace.html', context)
+
+
