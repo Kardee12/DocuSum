@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from DocuSum import settings
-from .forms import TranslationForm, SummarizationForm, QuestionForm, SentimentAnalysisForm
-from .service import TextSummarization, TextExtractor, TextTranslation, QuestionAnswering, SentimentAnalysis
+from sumApp.forms import TranslationForm, SummarizationForm, QuestionForm, SentimentAnalysisForm
+from sumApp.service import TextSummarization, TextExtractor, TextTranslation, QuestionAnswering, SentimentAnalysis
 from django.http import HttpResponse
 
 
@@ -17,10 +17,8 @@ def loginRedirect(request):
     # Your logic here, e.g., checking the user profile or redirecting to a dashboard
     return redirect('workspace')
 
-
-
-
-
+def logView(request):
+    return render(request, 'sumApp/login.html')
 
 
 

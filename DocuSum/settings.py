@@ -18,8 +18,8 @@ HUGGINGFACE_API_TOKEN = config('HUGGINGFACE_API_TOKEN')
 SOCIAL_AUTH_GOOGLE_CLIENT_ID  = config('SOCIAL_AUTH_GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_SECRET = config("SOCIAL_AUTH_GOOGLE_SECRET")
 LOGIN_REDIRECT_URL = '/workspace'
-
-
+LOGIN_URL = '/login'
+LOGOUT_URL = '/logout'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_URL = "/static/"
@@ -76,7 +76,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
     "allauth.account.middleware.AccountMiddleware",
 ]
 

@@ -81,32 +81,6 @@
     <script src="{% static 'assets/js/bold-and-bright.js' %}"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/js/bootstrap.bundle.min.js"></script>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
-{#    <script>#}
-{#      function onSignIn(googleUser) {#}
-{#        var id_token = googleUser.getAuthResponse().id_token;#}
-{##}
-{#        // Send the token to your server with an AJAX request#}
-{#        // Here, we will submit it to Django AllAuth via a hidden form#}
-{#        var form = document.createElement('form');#}
-{#        form.setAttribute('method', 'POST');#}
-{#        form.setAttribute('action', '{{% provider_login_url 'google' %}}'); // This URL will be the backend endpoint for AllAuth#}
-{##}
-{#        var tokenInput = document.createElement('input');#}
-{#        tokenInput.setAttribute('type', 'hidden');#}
-{#        tokenInput.setAttribute('name', 'access_token');#}
-{#        tokenInput.setAttribute('value', id_token);#}
-{##}
-{#        var csrfInput = document.createElement('input');#}
-{#        csrfInput.setAttribute('type', 'hidden');#}
-{#        csrfInput.setAttribute('name', 'csrfmiddlewaretoken');#}
-{#        csrfInput.setAttribute('value', '{{ csrf_token }}');#}
-{##}
-{#        form.appendChild(tokenInput);#}
-{#        form.appendChild(csrfInput);#}
-{#        document.body.appendChild(form);#}
-{#        form.submit();#}
-{#      }#}
-{#    </script>#}
     {% block extra_scripts %}{% endblock %}
 </body>
 
