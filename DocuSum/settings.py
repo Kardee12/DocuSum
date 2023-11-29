@@ -9,14 +9,16 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import json
 import os
 from pathlib import Path
-import json
+
 from decouple import config
 
 HUGGINGFACE_API_TOKEN = config('HUGGINGFACE_API_TOKEN')
-SOCIAL_AUTH_GOOGLE_CLIENT_ID  = config('SOCIAL_AUTH_GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_CLIENT_ID = config('SOCIAL_AUTH_GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_SECRET = config("SOCIAL_AUTH_GOOGLE_SECRET")
+OPENAI_API_KEY = config('OPENAI_API_KEY')
 LOGIN_REDIRECT_URL = '/workspace'
 LOGIN_URL = '/login'
 LOGOUT_URL = '/logout'
@@ -54,6 +56,7 @@ SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
+    "sumApp",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -116,7 +119,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 }
 
-SOCIALACCOUNT_LOGIN_ON_GET=True
+SOCIALACCOUNT_LOGIN_ON_GET = True
 WSGI_APPLICATION = "DocuSum.wsgi.application"
 
 # Database

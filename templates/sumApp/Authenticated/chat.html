@@ -1,0 +1,235 @@
+{% extends 'sumApp/Authenticated/authenticated_base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block content %}
+    <style>
+        .chat-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .chat-messages {
+            height: 60vh;
+            overflow-y: auto;
+            padding: 1rem;
+            border-bottom: 1px solid #ced4da;
+        }
+
+        .input-group {
+            padding: 1rem;
+        }
+
+        .disabled-button {
+            opacity: 0.5; /* Fades out the button */
+            pointer-events: none; /* Disables clicking on the button */
+        }
+
+        .input-group-text, .form-control, .btn-primary {
+            border-radius: 20px;
+        }
+
+        .btn-outline-danger {
+            border-radius: 8px;
+        }
+
+        .rounded-square {
+            border-radius: 8px;
+        }
+
+        .top-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-chat-btn {
+            border-radius: 9px;
+        }
+
+        .upload-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .link-upload-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        #link-input {
+            border-radius: 8px;
+        }
+
+        .fa-bounce {
+            animation: fa-bounce 1.5s infinite;
+        }
+
+        @keyframes fa-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .clear-chat-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-chat-icon {
+            margin-right: 5px;
+        }
+    </style>
+
+    <div class="container py-4">
+        <div class="top-buttons">
+            <button class="btn btn-danger clear-chat-btn" type="button" onclick="clearChat()">
+                <i class="fa-solid fa-xmark clear-chat-icon"></i>
+            </button>
+            <div class="upload-container">
+                <div class="link-upload-container">
+                    <input type="text" id="link-input" class="form-control" placeholder="Enter link...">
+                    <button class="btn btn-primary rounded-square upload-btn" type="button" id="upload-link-button">
+                        <i class="fa-sharp fa-solid fa-magnifying-glass fa-bounce" style="color: #ffffff;"></i>
+                    </button>
+                </div>
+                <input type="file" id="file-upload" style="display: none;"> <!-- Hidden file input -->
+                <button class="btn btn-outline-primary rounded-square" type="button" id="upload-file-button"
+                        onclick="document.getElementById('file-upload').click();">Upload File
+                </button>
+            </div>
+        </div>
+        <div class="chat-card">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Type your message..." id="chat-input">
+                <button class="btn btn-primary" type="button" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Define elements
+            const input = document.getElementById("chat-input");
+            const fileInput = document.getElementById('file-upload');
+            const fileButton = document.getElementById('upload-file-button');
+            const linkInput = document.getElementById('link-input');
+            const linkButton = document.getElementById('upload-link-button');
+
+            // Event listener for file selection
+            fileInput.addEventListener('change', function () {
+                if (this.files.length > 0) {
+                    disableUploadOptions();
+                }
+            });
+
+            // Event listener for link button click
+            linkButton.addEventListener('click', function () {
+                if (linkInput.value.trim()) {
+                    disableUploadOptions();
+                }
+            });
+
+            // Disable upload options
+            function disableUploadOptions() {
+                fileButton.classList.add('disabled-button');
+                linkButton.classList.add('disabled-button');
+                fileInput.disabled = true;
+                linkInput.disabled = true;
+            }
+
+            // Enable upload options
+            function enableUploadOptions() {
+                fileButton.classList.remove('disabled-button');
+                linkButton.classList.remove('disabled-button');
+                fileInput.disabled = false;
+                linkInput.disabled = false;
+            }
+
+            // Send message
+            window.sendMessage = function () {
+                let formData = new FormData();
+                const message = input.value.trim();
+                const files = fileInput.files;
+                const link = linkInput.value.trim();
+
+                if (message) {
+                    appendMessage("You:", message, "user-message");
+                    formData.append('message', message);
+                }
+                if (files.length > 0) {
+                    appendMessage("You:", `Uploaded ${files[0].name}`, "user-message");
+                    formData.append('file', files[0]);
+                }
+                if (link) {
+                    appendMessage("You:", `Uploaded link: ${link}`, "user-message");
+                    formData.append('link', link);
+                }
+
+                if (message || files.length > 0 || link) {
+                    $.ajax({
+                        url: "{% url 'processMessagesAndFiles' %}",
+                        type: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.api_response) {
+                                appendMessage("AI Response:", response.api_response, "ai-response");
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error:", error);
+                        }
+                    });
+
+                    input.value = "";
+                    fileInput.value = "";
+                    linkInput.value = "";
+                }
+            }
+
+            // Append message
+            window.appendMessage = function (sender, text, className) {
+                const messagesContainer = document.getElementById("chat-messages");
+                const msgDiv = document.createElement("div");
+                msgDiv.classList.add("d-flex", "flex-column", "mb-2", className);
+                msgDiv.innerHTML = `<strong class="mb-1">${sender}</strong><div class="p-2 bg-light rounded">${text}</div>`;
+                messagesContainer.appendChild(msgDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // Clear chat
+            window.clearChat = function () {
+                $.ajax({
+                    url: "{% url 'clearChat' %}",
+                    type: "POST",
+                    success: function (response) {
+                        if (response.success) {
+                            document.getElementById("chat-messages").innerHTML = '';
+                            enableUploadOptions();
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error:", error);
+                    }
+                });
+            }
+        });
+    </script>
+
+{% endblock %}

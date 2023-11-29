@@ -1,7 +1,9 @@
 import tempfile
+
+import textract
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from tika import parser
-import textract
+
 from sumApp.utils.HuggingFaceAPIs import huggingFaceAPis
 
 
@@ -61,14 +63,12 @@ class QuestionAnswering:
         hFace = huggingFaceAPis()
         output = hFace.askQuery(model, text, question)
         print(output)
-        output = output['answer']
         return output
 
-class SentimentAnalysis:
 
+class SentimentAnalysis:
     def pickModel(self, model_name, text):
         model = model_name.upper()
         hFace = huggingFaceAPis()
         output = hFace.sentimentQuery(model, text)
-        output = output[0]['generated_text']
         return output

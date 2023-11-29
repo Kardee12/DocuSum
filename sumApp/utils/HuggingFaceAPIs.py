@@ -22,8 +22,9 @@ class huggingFaceAPis:
     def transQuery(self, model, text, langTTF, langTTT):
         APIURL, modelKey = self.helper.base(model)
         payload = {
-            "inputs": f"Translate from {langTTF} to {langTTT}: {text}"
+            "inputs": f"Translate from {langTTF} to {langTTT}: '{text}'"
         }
+        print(payload)
         print("DONE")
         return self.helper.closure(APIURL, payload)
 

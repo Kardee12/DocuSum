@@ -3,32 +3,32 @@
 
 {% block content %}
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Your Workspaces</h2>
-        <button class="btn btn-primary">Create New Workspace</button>
-    </div>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Your Workspaces</h2>
+            <button class="btn btn-primary">Create New Workspace</button>
+        </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <!-- Repeat this block for each workspace -->
-        <div class="col">
-            <div class="card h-100">
-                <img src="path-to-your-workspace-image.jpg" class="card-img-top" alt="Workspace Preview">
-                <div class="card-body">
-                    <h5 class="card-title">Workspace Name</h5>
-                    <p class="card-text">Short description of the workspace...</p>
-                    <button class="btn btn-outline-secondary">Open</button>
-                </div>
-                <div class="card-footer text-muted">
-                    Last modified: date
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <!-- Repeat this block for each workspace -->
+            <div class="col">
+                <div class="card h-100">
+                    <img src="path-to-your-workspace-image.jpg" class="card-img-top" alt="Workspace Preview">
+                    <div class="card-body">
+                        <h5 class="card-title">Workspace Name</h5>
+                        <p class="card-text">Short description of the workspace...</p>
+                        <button class="btn btn-outline-secondary">Open</button>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Last modified: date
+                    </div>
                 </div>
             </div>
+            <!-- End workspace block -->
         </div>
-        <!-- End workspace block -->
-    </div>
 
-    <div class="alert alert-info" role="alert">
-        You haven't created any workspaces yet. Start by clicking the "Create New Workspace" button.
+        <div class="alert alert-info" role="alert">
+            You haven't created any workspaces yet. Start by clicking the "Create New Workspace" button.
+        </div>
     </div>
-</div>
 {% endblock %}
