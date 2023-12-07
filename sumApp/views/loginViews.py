@@ -1,17 +1,18 @@
 import csv
+import glob
+import os
 from io import StringIO
 
 from allauth.socialaccount.models import SocialAccount
 from decouple import config
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
@@ -23,7 +24,7 @@ from sumApp.models import ChatData
 from sumApp.models import Document
 from sumApp.service import TextExtractor, TextSummarization, QuestionAnswering, SentimentAnalysis, TextTranslation
 from sumApp.utils.LLMAPIs import extract_text_from_pdf, \
-    saveChatMessage, getChatHistory, format_chat_history
+    saveChatMessage, formatChatHistory
 
 load_dotenv()
 
@@ -62,8 +63,6 @@ def logoutView(request):
 def custom_logout(request):
     if request.user.is_authenticated:
         ChatData.objects.filter(user = request.user).delete()
-
-    # Then logout the user
     logout(request)
     return redirect('/logout')
 
@@ -81,16 +80,17 @@ def workspace(request):
     qaSuccessMessage = ""
     saSuccessMessage = ""
     active = "summarize"
+    currAction = ""
     if request.method == 'POST' and 'action' in request.POST:
         if request.POST['action'] == 'summarize':
             active = 'summarize'
+            currAction = 'summarize'
             sumForm = SummarizationForm(request.POST, request.FILES)
             if sumForm.is_valid():
                 text = sumForm.cleaned_data['textInput']
                 model = sumForm.cleaned_data['model']
                 minTokens = sumForm.cleaned_data['minTokens']
                 maxTokens = sumForm.cleaned_data['maxTokens']
-
                 if sumForm.cleaned_data['uploadFile']:
                     uploadFile = request.FILES['uploadFile']
                     print(len(uploadFile))
@@ -102,18 +102,22 @@ def workspace(request):
                 result = summarizer.pickModel(model, text, maxTokens, minTokens)
                 original = text
                 if result:
+                    request.session['original'] = original
+                    request.session['result'] = result
+                    request.session['recentAction'] = currAction
+                    request.session['actionCompleted'] = True
                     sumSuccessMessage = "Summary Successfully Generated"
                     sumForm = SummarizationForm()
 
         if request.POST['action'] == 'translate':
             active = 'translate'
+            currAction = 'translate'
             tranForm = TranslationForm(request.POST, request.FILES)
             if tranForm.is_valid():
                 text = tranForm.cleaned_data['textInput']
                 model = tranForm.cleaned_data['model']
                 langTTF = tranForm.cleaned_data['langTTF']
                 langTTT = tranForm.cleaned_data['langTTT']
-
                 if tranForm.cleaned_data['uploadFile']:
                     uploadFile = request.FILES['uploadFile']
                     print(len(uploadFile))
@@ -125,11 +129,17 @@ def workspace(request):
                 print(result)
                 original = text
                 if result:
+                    request.session['original'] = original
+                    request.session['result'] = result
+                    request.session['recentAction'] = currAction
+                    request.session['actionCompleted'] = True
                     trSuccessMessage = "Translation Successfully Generated"
                     sumForm = SummarizationForm()
 
         if request.POST['action'] == 'ask':
             active = 'ask'
+            currAction = 'question'
+
             quesForm = QuestionForm(request.POST, request.FILES)
             if quesForm.is_valid():
                 text = quesForm.cleaned_data['textInput']
@@ -143,14 +153,19 @@ def workspace(request):
                     text = extractor.extract(uploadFile)
                 asker = QuestionAnswering()
                 result = asker.pickModel(model, text, question)
-                print(text)
+                result = result['answer'].replace('\n', ' ')
                 original = text
                 if result:
+                    request.session['original'] = original
+                    request.session['result'] = result
+                    request.session['recentAction'] = currAction
+                    request.session['actionCompleted'] = True
                     qaSuccessMessage = "Question Successfully Answered"
                     sumForm = SummarizationForm()
 
         if request.POST['action'] == 'sentiment':
             active = 'sentiment'
+            currAction = 'sentiment'
             sentiForm = SentimentAnalysisForm(request.POST, request.FILES)
             if sentiForm.is_valid():
                 text = sentiForm.cleaned_data['textInput']
@@ -166,6 +181,10 @@ def workspace(request):
                 print(text)
                 original = text
                 if result:
+                    request.session['original'] = original
+                    request.session['result'] = result
+                    request.session['recentAction'] = currAction
+                    request.session['actionCompleted'] = True
                     qaSuccessMessage = "Sentiment Analysis Done"
                     sentiForm = SentimentAnalysisForm()
     context = {
@@ -202,7 +221,6 @@ def processMessagesAndFiles(request):
         link = request.POST.get('link')
         llm = ChatOpenAI(model_name = "gpt-4-1106-preview", temperature = 0)
         global retriever
-        conversation_memory = ConversationBufferMemory(memory_key = "chat_history")
         if file:
             document = Document(name = 'tmp', file = file)
             document.save()
@@ -210,11 +228,11 @@ def processMessagesAndFiles(request):
             print(file.content_type)
             if file.content_type == 'text/plain':
                 document.file.open('r')
-                file_content = document.file.read()
-                if isinstance(file_content, bytes):
-                    text = file_content.decode('utf-8', errors = 'ignore')
+                fileContent = document.file.read()
+                if isinstance(fileContent, bytes):
+                    text = fileContent.decode('utf-8', errors = 'ignore')
                 else:
-                    text = file_content
+                    text = fileContent
                 document.file.close()
             if file.content_type == 'application/pdf':
                 text = extract_text_from_pdf(document.id)
@@ -234,13 +252,13 @@ def processMessagesAndFiles(request):
         if link:
             print(link)
         if message:
-            chat_history_qs = ChatData.objects.filter(user = request.user).order_by('created_at')
-            formatted_history = format_chat_history(chat_history_qs)
+            chatHistory = ChatData.objects.filter(user = request.user).order_by('created_at')
+            history = formatChatHistory(chatHistory)
 
-            def context_function(question):
+            def contextFunction(question):
                 retrieved_docs = retriever.get_relevant_documents(question)
                 docs_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
-                return f"Here is the conversation history:\n{formatted_history}\n\n{docs_context}"
+                return f"Here is the conversation history:\n{history}\n\n{docs_context}"
 
             qa_system_prompt = """ 
                 You are an assistant for question-answering tasks. 
@@ -256,20 +274,36 @@ def processMessagesAndFiles(request):
                 ]
             )
             rag_chain = (
-                    RunnablePassthrough.assign(context = lambda x: context_function(x["question"]))
+                    RunnablePassthrough.assign(context = lambda x: contextFunction(x["question"]))
                     | qa_prompt
                     | llm
                     | StrOutputParser()
             )
-            ai_response = rag_chain.invoke({"question": message})
+            aiResponse = rag_chain.invoke({"question": message})
             saveChatMessage(request.user, message, is_question = True, is_ai = False)
-            saveChatMessage(request.user, ai_response, is_question = False, is_ai = True)
-            response_data['api_response'] = ai_response
-
+            saveChatMessage(request.user, aiResponse, is_question = False, is_ai = True)
+            response_data['api_response'] = aiResponse
         return JsonResponse(response_data)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status = 400)
 
+
+@login_required
+def downloadFile(request):
+    original = request.session.get('original', '')
+    result = request.session.get('result', '')
+    action = request.session.get('recentAction', 'default')
+    file_content = f"{original}\n_______\n{action}:\n{result}"
+    filename = f"{action}_output.txt"
+    response = HttpResponse(file_content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    del request.session['original']
+    del request.session['result']
+    del request.session['recentAction']
+    del request.session['actionCompleted']
+
+    return response
 
 @csrf_exempt
 @login_required

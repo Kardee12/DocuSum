@@ -1,16 +1,10 @@
 import tempfile
-import tempfile
 import urllib
 
 import fitz_new
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from dotenv import load_dotenv
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.llms.openai import OpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import AIMessage, HumanMessage
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores.faiss import FAISS
 
 from sumApp.models import ChatData, Document
 
@@ -29,17 +23,6 @@ def ensure_https_www(url):
         decoded_url = "https://www." + decoded_url
 
     return decoded_url
-
-def formatChatHistory(user):
-    chat_history = ChatData.objects.filter(user = user).order_by('-created_at')
-    formatted_history = []
-    for entry in chat_history:
-        if entry.isAI:
-            message = AIMessage(content = entry.content)
-        else:
-            message = HumanMessage(content = entry.content)
-        formatted_history.append(message)
-    return formatted_history
 
 
 def handleUploadedFile(uploaded_file: InMemoryUploadedFile):
@@ -91,9 +74,9 @@ def getChatHistory(user):
     return ChatData.objects.filter(user = user).order_by('created_at')
 
 
-def format_chat_history(chat_history_qs):
+def formatChatHistory(messages):
     formatted_history = ""
-    for entry in chat_history_qs:
+    for entry in messages:
         speaker = "User" if entry.isQuestion else "AI"
         formatted_history += f"{speaker}: {entry.content}\n"
     return formatted_history.strip()

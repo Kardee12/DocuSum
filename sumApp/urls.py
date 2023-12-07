@@ -17,4 +17,5 @@ urlpatterns = [
                   path('processMessagesAndFiles/', loginViews.processMessagesAndFiles,
                        name = 'processMessagesAndFiles'),
                   path('clearChat/', loginViews.clearChat, name = 'clearChat'),
+                  path('download/', loginViews.downloadFile, name = 'downloadFile'),
               ] + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)

@@ -12,7 +12,6 @@ def index(request):
 
 
 def loginRedirect(request):
-    # Your logic here, e.g., checking the user profile or redirecting to a dashboard
     return redirect('workspace')
 
 

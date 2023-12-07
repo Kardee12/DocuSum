@@ -51,7 +51,7 @@ class TextTranslation:
         output = hFace.transQuery(model, text, langTTF, langTTT)
         print(langTTF)
         print(output)
-        result = output[0]['generated_text']
+        result = output[0]['translation_text']
         print(result)
         return result
 
