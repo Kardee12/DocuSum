@@ -1,7 +1,7 @@
 import tempfile
 import urllib
 
-import fitz_new
+import fitz
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from dotenv import load_dotenv
 from langchain.schema import AIMessage, HumanMessage
@@ -48,7 +48,7 @@ def extract_text_from_pdf(document_id):
     try:
         document = Document.objects.get(id = document_id)
         text = ""
-        with fitz_new.open(document.file.path) as doc:
+        with fitz.open(document.file.path) as doc:
             for page in doc:
                 text += page.get_text()
         return text

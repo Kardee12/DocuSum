@@ -2,6 +2,8 @@ import tempfile
 
 import textract
 from django.core.files.uploadedfile import InMemoryUploadedFile
+import os
+os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/1.19/tika-server-1.19.jar'
 from tika import parser
 
 from sumApp.utils.HuggingFaceAPIs import huggingFaceAPis

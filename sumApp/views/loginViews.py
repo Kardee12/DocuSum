@@ -1,8 +1,11 @@
 import csv
 import glob
+import json
 import os
+import tempfile
 from io import StringIO
 
+import langchain_core.documents
 from allauth.socialaccount.models import SocialAccount
 from decouple import config
 from django.contrib.auth import logout
@@ -11,13 +14,23 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain import hub
+from langchain.chains.summarize import load_summarize_chain
+from langchain_community.vectorstores.faiss import FAISS
+from langchain_community.vectorstores.utils import filter_complex_metadata
+from langchain_openai import ChatOpenAI
+from langchain_community.document_loaders import PyPDFLoader, CSVLoader, UnstructuredFileLoader, UnstructuredCSVLoader
+from langchain_community.document_loaders import TextLoader, JSONLoader
+from langchain_openai import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.chroma import Chroma
+from langchain_community.document_loaders import AsyncChromiumLoader
+from langchain_community.document_transformers import Html2TextTransformer
+import nest_asyncio
+
 
 from sumApp.forms import TranslationForm, SummarizationForm, QuestionForm, SentimentAnalysisForm
 from sumApp.models import ChatData
@@ -26,7 +39,14 @@ from sumApp.service import TextExtractor, TextSummarization, QuestionAnswering, 
 from sumApp.utils.LLMAPIs import extract_text_from_pdf, \
     saveChatMessage, formatChatHistory
 
+import redis
+
 load_dotenv()
+
+
+
+global retriever
+r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 
 @login_required
@@ -214,79 +234,148 @@ def chat_view(request):
 @csrf_exempt
 @login_required
 def processMessagesAndFiles(request):
-    if request.method == 'POST':
-        response_data = {}
-        message = request.POST.get('message')
-        file = request.FILES.get('file')
-        link = request.POST.get('link')
-        llm = ChatOpenAI(model_name = "gpt-4-1106-preview", temperature = 0)
-        global retriever
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+    response_data = {}
+    message = request.POST.get('message')
+    file = request.FILES.get('file')
+    link = request.POST.get('link')
+    retriever = None
+    llm = ChatOpenAI(model_name="gpt-4-1106-preview", temperature=0)
+    pages = None
+
+    try:
         if file:
-            document = Document(name = 'tmp', file = file)
+            document = Document(name='tmp', file=file)
             document.save()
             text = ""
-            print(file.content_type)
             if file.content_type == 'text/plain':
-                document.file.open('r')
-                fileContent = document.file.read()
-                if isinstance(fileContent, bytes):
-                    text = fileContent.decode('utf-8', errors = 'ignore')
-                else:
-                    text = fileContent
-                document.file.close()
+                with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                    for chunk in file.chunks():
+                        temp_file.write(chunk)
+                    temp_file.flush()
+                    loader = TextLoader(temp_file.name,encoding='utf-8')
+                    text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
+                    pages = loader.load_and_split(text_splitter)
+                    # print(pages)
             if file.content_type == 'application/pdf':
-                text = extract_text_from_pdf(document.id)
-                document.file.close()
-            elif file.content_type == 'text/csv':
-                document.file.open('r')
-                csv_file = StringIO(document.file.read())
-                reader = csv.reader(csv_file)
-                text = ' '.join([' '.join(row) for row in reader])
-                document.file.close()
-            if text:
-                text_splitter = CharacterTextSplitter(chunk_size = 512, chunk_overlap = 200)
-                texts = text_splitter.create_documents([text])
-                vectorstore = Chroma.from_documents(documents = texts, embedding = OpenAIEmbeddings())
-                retriever = vectorstore.as_retriever(search_type = "similarity", search_kwargs = {"k": 6})
+                with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                    for chunk in file.chunks():
+                        temp_file.write(chunk)
+                    temp_file.flush()
+                    loader = PyPDFLoader(temp_file.name, extract_images=True)
+                    text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
+                    pages = loader.load_and_split(text_splitter)
+                    # print(pages)
+            if file.content_type == 'text/csv':
+                #PANDAS DATAFRAME AS WELL MAYBE USE DATAFRAMELOADER
+                with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                    for chunk in file.chunks():
+                        temp_file.write(chunk)
+                    temp_file.flush()
+                    loader = UnstructuredCSVLoader(
+                        file_path=temp_file.name, mode="elements"
+                    )
+                    pages = loader.load()
+                    pages = filter_complex_metadata(pages)
+            if file.content_type == 'application/json':
+                with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+                    for chunk in file.chunks():
+                        temp_file.write(chunk)
+                    temp_file.flush()
+                    loader = JSONLoader(temp_file, jq_schema='.')
+                    text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
+                    pages = loader.load_and_split(text_splitter)
+                    # print(pages)
             document.delete()
         if link:
-            print(link)
+            if ".pdf" in link:
+                loader = PyPDFLoader(link, extract_images= True)
+                text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
+                pages = loader.load_and_split(text_splitter)
+            else:
+                links = [link]
+                nest_asyncio.apply()
+                loader = AsyncChromiumLoader(links)
+                docs = loader.load()
+                html2text = Html2TextTransformer()
+                docs_transformed = html2text.transform_documents(docs)
+                text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=0)
+                pages = text_splitter.split_documents(docs_transformed)
+                # print(pages)
+        if pages:
+            document_counter_key = 'document_counter'
+            r.set(document_counter_key, 0)
+            for idx, doc in enumerate(pages):
+                r.incr(document_counter_key)
+                doc_dict = {
+                    'page_content': doc.page_content,
+                    'metadata': doc.metadata
+                }
+                r.set(f'document:{idx}', json.dumps(doc_dict))
         if message:
-            chatHistory = ChatData.objects.filter(user = request.user).order_by('created_at')
+            print("ARRIVED")
+            chatHistory = ChatData.objects.filter(user=request.user).order_by('created_at')
             history = formatChatHistory(chatHistory)
+            document_counter_key = 'document_counter'
+            document_count = int(r.get(document_counter_key) or 0)
+            retrieved_documents = []
 
+            for idx in range(document_count):
+                doc_json = r.get(f'document:{idx}')
+                if doc_json:
+                    doc_dict = json.loads(doc_json)
+                    doc = langchain_core.documents.Document(page_content=doc_dict['page_content'], metadata=doc_dict['metadata'])
+                    retrieved_documents.append(doc)
+                else:
+                    print(f"Document {idx} was not found in Redis.")
+            print(retrieved_documents)
+            print("\n_______\n")
+            print(pages)
+            vectorstore = Chroma.from_documents(documents=retrieved_documents, embedding=OpenAIEmbeddings())
+            retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
             def contextFunction(question):
+                documents_info = 'The documents to be questioned on are: ...'
+                if retriever is None:
+                    return f"{documents_info}\n\nHere is the conversation history:\n{history}"
                 retrieved_docs = retriever.get_relevant_documents(question)
                 docs_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
-                return f"Here is the conversation history:\n{history}\n\n{docs_context}"
+                complete_context = f"{documents_info}\n\nHere is the conversation history:\n{history}\n\n{docs_context}"
+                print(complete_context)
+                return complete_context
 
-            qa_system_prompt = """ 
-                You are an assistant for question-answering tasks. 
-                Use the following pieces of retrieved context to answer the question. 
-                If you don't know the answer, just say that you don't know. 
-                Use three sentences maximum and keep the answer concise. Chat History is included in the context as well.
-                {context}
-            """
+            qa_system_prompt = """
+                    You are an assistant for question-answering tasks.
+                    Use the following pieces of retrieved context to answer the question.
+                    If you don't know the answer, just say that you don't know.
+                    Use three sentences maximum and keep the answer concise. Chat History is included in the context as well.
+                    {context}
+                """
             qa_prompt = ChatPromptTemplate.from_messages(
                 [
                     ("system", qa_system_prompt),
                     ("human", "{question}"),
                 ]
             )
+
             rag_chain = (
-                    RunnablePassthrough.assign(context = lambda x: contextFunction(x["question"]))
+                    RunnablePassthrough.assign(context=lambda x: contextFunction(x["question"]))
                     | qa_prompt
                     | llm
                     | StrOutputParser()
             )
-            aiResponse = rag_chain.invoke({"question": message})
-            saveChatMessage(request.user, message, is_question = True, is_ai = False)
-            saveChatMessage(request.user, aiResponse, is_question = False, is_ai = True)
-            response_data['api_response'] = aiResponse
-        return JsonResponse(response_data)
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status = 400)
 
+            aiResponse = rag_chain.invoke({"question": message})
+            saveChatMessage(request.user, message, is_question=True, is_ai=False)
+            saveChatMessage(request.user, aiResponse, is_question=False, is_ai=True)
+            response_data['api_response'] = aiResponse
+
+            return JsonResponse(response_data)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 
 @login_required
 def downloadFile(request):
@@ -309,6 +398,7 @@ def downloadFile(request):
 @login_required
 def clearChat(request):
     if request.method == 'POST':
+        r.flushall()
         ChatData.objects.filter(user = request.user).delete()
         conv_history = ChatData.objects.filter(user = request.user)
         context = ",".join([content.content for content in conv_history])
