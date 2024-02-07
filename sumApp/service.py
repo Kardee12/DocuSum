@@ -1,8 +1,9 @@
+import os
 import tempfile
 
 import textract
 from django.core.files.uploadedfile import InMemoryUploadedFile
-import os
+
 os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/1.19/tika-server-1.19.jar'
 from tika import parser
 
@@ -12,7 +13,7 @@ from sumApp.utils.HuggingFaceAPIs import huggingFaceAPis
 class TextExtractor:
     def extract(self, file):
         if isinstance(file, InMemoryUploadedFile):
-            with tempfile.NamedTemporaryFile(delete = False) as temp_file:
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 temp_file.write(file.read())
                 if file.name.endswith('.pdf'):
                     pdf = parser.from_file(temp_file.name)
@@ -20,7 +21,7 @@ class TextExtractor:
                 elif file.name.endswith('.docx'):
                     text = textract.process(temp_file.name)
                 else:
-                    text = file.read().decode('utf-8', errors = 'ignore')
+                    text = file.read().decode('utf-8', errors='ignore')
         else:
             raise FileNotFoundError
         return text.strip()

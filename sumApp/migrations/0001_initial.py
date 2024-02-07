@@ -14,24 +14,24 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name = "ChatData",
-            fields = [
+            name="ChatData",
+            fields=[
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created = True,
-                        primary_key = True,
-                        serialize = False,
-                        verbose_name = "ID",
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
                     ),
                 ),
                 ("content", models.TextField()),
-                ("created_at", models.DateTimeField(auto_now_add = True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "user",
                     models.ForeignKey(
-                        on_delete = django.db.models.deletion.CASCADE,
-                        to = settings.AUTH_USER_MODEL,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],

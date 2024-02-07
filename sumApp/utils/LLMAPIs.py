@@ -4,7 +4,6 @@ import urllib
 import fitz
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from dotenv import load_dotenv
-from langchain.schema import AIMessage, HumanMessage
 
 from sumApp.models import ChatData, Document
 
@@ -12,7 +11,7 @@ load_dotenv()
 
 
 def getContext(user):
-    context_entries = ChatData.objects.filter(user = user, isAI = False, isQuestion = False).order_by('-created_at')
+    context_entries = ChatData.objects.filter(user=user, isAI=False, isQuestion=False).order_by('-created_at')
     context = " ".join([entry.content for entry in context_entries])
     return context
 
@@ -28,7 +27,7 @@ def ensure_https_www(url):
 def handleUploadedFile(uploaded_file: InMemoryUploadedFile):
     temp_path = None
     try:
-        with tempfile.NamedTemporaryFile(delete = False, mode = 'wb+', suffix = ".pdf") as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False, mode='wb+', suffix=".pdf") as temp_file:
             for chunk in uploaded_file.chunks():
                 temp_file.write(chunk)
             temp_path = temp_file.name
@@ -46,7 +45,7 @@ def handle_uploaded_file(f):
 
 def extract_text_from_pdf(document_id):
     try:
-        document = Document.objects.get(id = document_id)
+        document = Document.objects.get(id=document_id)
         text = ""
         with fitz.open(document.file.path) as doc:
             for page in doc:
@@ -62,16 +61,16 @@ def extract_text_from_pdf(document_id):
 
 def saveChatMessage(user, content, is_question, is_ai):
     chat_message = ChatData(
-        user = user,
-        content = content,
-        isQuestion = is_question,
-        isAI = is_ai
+        user=user,
+        content=content,
+        isQuestion=is_question,
+        isAI=is_ai
     )
     chat_message.save()
 
 
 def getChatHistory(user):
-    return ChatData.objects.filter(user = user).order_by('created_at')
+    return ChatData.objects.filter(user=user).order_by('created_at')
 
 
 def formatChatHistory(messages):

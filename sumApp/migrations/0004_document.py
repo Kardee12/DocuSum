@@ -10,18 +10,18 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name = "Document",
-            fields = [
+            name="Document",
+            fields=[
                 (
                     "id",
                     models.BigAutoField(
-                        auto_created = True,
-                        primary_key = True,
-                        serialize = False,
-                        verbose_name = "ID",
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
                     ),
                 ),
-                ("file", models.FileField(upload_to = "documents/")),
+                ("file", models.FileField(upload_to="documents/")),
             ],
         ),
     ]

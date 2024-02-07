@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name = "chatdata",
-            name = "isQuestion",
-            field = models.BooleanField(default = False),
+            model_name="chatdata",
+            name="isQuestion",
+            field=models.BooleanField(default=False),
         ),
     ]

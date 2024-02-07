@@ -1,11 +1,10 @@
-import csv
-import glob
 import json
-import os
+import json
 import tempfile
-from io import StringIO
 
 import langchain_core.documents
+import nest_asyncio
+import redis
 from allauth.socialaccount.models import SocialAccount
 from decouple import config
 from django.contrib.auth import logout
@@ -14,36 +13,26 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from langchain import hub
-from langchain.chains.summarize import load_summarize_chain
-from langchain_community.vectorstores.faiss import FAISS
-from langchain_community.vectorstores.utils import filter_complex_metadata
-from langchain_openai import ChatOpenAI
-from langchain_community.document_loaders import PyPDFLoader, CSVLoader, UnstructuredFileLoader, UnstructuredCSVLoader
-from langchain_community.document_loaders import TextLoader, JSONLoader
-from langchain_openai import OpenAIEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.chroma import Chroma
 from langchain_community.document_loaders import AsyncChromiumLoader
+from langchain_community.document_loaders import PyPDFLoader, UnstructuredCSVLoader
+from langchain_community.document_loaders import TextLoader, JSONLoader
 from langchain_community.document_transformers import Html2TextTransformer
-import nest_asyncio
-
+from langchain_community.vectorstores.utils import filter_complex_metadata
+from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
 
 from sumApp.forms import TranslationForm, SummarizationForm, QuestionForm, SentimentAnalysisForm
 from sumApp.models import ChatData
 from sumApp.models import Document
 from sumApp.service import TextExtractor, TextSummarization, QuestionAnswering, SentimentAnalysis, TextTranslation
-from sumApp.utils.LLMAPIs import extract_text_from_pdf, \
-    saveChatMessage, formatChatHistory
-
-import redis
+from sumApp.utils.LLMAPIs import saveChatMessage, formatChatHistory
 
 load_dotenv()
-
-
 
 global retriever
 r = redis.Redis(host='localhost', port=6379, decode_responses=True)
@@ -52,7 +41,7 @@ r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 @login_required
 def profile(request):
     try:
-        social_account = SocialAccount.objects.get(user = request.user)
+        social_account = SocialAccount.objects.get(user=request.user)
     except SocialAccount.DoesNotExist:
         social_account = None
     if 'sign_out' in request.POST:
@@ -79,10 +68,12 @@ def dashboard(request):
 def logoutView(request):
     return render(request, 'sumApp/logout.html')
 
+def test_view(requst):
+    return render(requst, 'sumApp/Authenticated/new-chat.html')
 
 def custom_logout(request):
     if request.user.is_authenticated:
-        ChatData.objects.filter(user = request.user).delete()
+        ChatData.objects.filter(user=request.user).delete()
     logout(request)
     return redirect('/logout')
 
@@ -244,6 +235,7 @@ def processMessagesAndFiles(request):
     retriever = None
     llm = ChatOpenAI(model_name="gpt-4-1106-preview", temperature=0)
     pages = None
+    print(r.ping())
 
     try:
         if file:
@@ -255,7 +247,7 @@ def processMessagesAndFiles(request):
                     for chunk in file.chunks():
                         temp_file.write(chunk)
                     temp_file.flush()
-                    loader = TextLoader(temp_file.name,encoding='utf-8')
+                    loader = TextLoader(temp_file.name, encoding='utf-8')
                     text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                     pages = loader.load_and_split(text_splitter)
                     # print(pages)
@@ -269,7 +261,7 @@ def processMessagesAndFiles(request):
                     pages = loader.load_and_split(text_splitter)
                     # print(pages)
             if file.content_type == 'text/csv':
-                #PANDAS DATAFRAME AS WELL MAYBE USE DATAFRAMELOADER
+                # PANDAS DATAFRAME AS WELL MAYBE USE DATAFRAMELOADER
                 with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                     for chunk in file.chunks():
                         temp_file.write(chunk)
@@ -291,7 +283,7 @@ def processMessagesAndFiles(request):
             document.delete()
         if link:
             if ".pdf" in link:
-                loader = PyPDFLoader(link, extract_images= True)
+                loader = PyPDFLoader(link, extract_images=True)
                 text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                 pages = loader.load_and_split(text_splitter)
             else:
@@ -303,7 +295,6 @@ def processMessagesAndFiles(request):
                 docs_transformed = html2text.transform_documents(docs)
                 text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=0)
                 pages = text_splitter.split_documents(docs_transformed)
-                # print(pages)
         if pages:
             document_counter_key = 'document_counter'
             r.set(document_counter_key, 0)
@@ -326,15 +317,14 @@ def processMessagesAndFiles(request):
                 doc_json = r.get(f'document:{idx}')
                 if doc_json:
                     doc_dict = json.loads(doc_json)
-                    doc = langchain_core.documents.Document(page_content=doc_dict['page_content'], metadata=doc_dict['metadata'])
+                    doc = langchain_core.documents.Document(page_content=doc_dict['page_content'],
+                                                            metadata=doc_dict['metadata'])
                     retrieved_documents.append(doc)
                 else:
                     print(f"Document {idx} was not found in Redis.")
-            print(retrieved_documents)
-            print("\n_______\n")
-            print(pages)
             vectorstore = Chroma.from_documents(documents=retrieved_documents, embedding=OpenAIEmbeddings())
             retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
+
             def contextFunction(question):
                 documents_info = 'The documents to be questioned on are: ...'
                 if retriever is None:
@@ -377,6 +367,7 @@ def processMessagesAndFiles(request):
         print(f"An error occurred: {e}")
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
+
 @login_required
 def downloadFile(request):
     original = request.session.get('original', '')
@@ -394,14 +385,15 @@ def downloadFile(request):
 
     return response
 
+
 @csrf_exempt
 @login_required
 def clearChat(request):
     if request.method == 'POST':
         r.flushall()
-        ChatData.objects.filter(user = request.user).delete()
-        conv_history = ChatData.objects.filter(user = request.user)
+        ChatData.objects.filter(user=request.user).delete()
+        conv_history = ChatData.objects.filter(user=request.user)
         context = ",".join([content.content for content in conv_history])
         print('New history is {' + str(context) + '}')
         return JsonResponse({'success': True})
-    return JsonResponse({'success': False, 'error': 'Invalid request'}, status = 400)
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)

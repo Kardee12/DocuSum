@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name = "document",
-            name = "name",
-            field = models.CharField(default = "DEFAULT", max_length = 255),
+            model_name="document",
+            name="name",
+            field=models.CharField(default="DEFAULT", max_length=255),
         ),
     ]

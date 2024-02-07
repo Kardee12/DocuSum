@@ -4,7 +4,7 @@ import logging
 import requests
 from decouple import config
 
-logging.basicConfig(level = logging.INFO)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 with open('config.json', 'r') as file:
@@ -26,7 +26,7 @@ class apiHelper:
 
     def closure(self, APIURL, payload):
         try:
-            response = requests.post(APIURL, headers = hf_token_header, json = payload)
+            response = requests.post(APIURL, headers=hf_token_header, json=payload)
             response.raise_for_status()
             logger.info(response.json())
             return response.json()

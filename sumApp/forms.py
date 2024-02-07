@@ -4,29 +4,29 @@ from django.core.validators import FileExtensionValidator
 
 class SummarizationForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
-        validators = [FileExtensionValidator(allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])]
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])]
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
     )
     model = forms.ChoiceField(
-        choices = [('BART', 'BART'), ('FLAN-T5', 'FLAN-T5')],
-        widget = forms.Select(attrs = {'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
+        choices=[('BART', 'BART'), ('FLAN-T5', 'FLAN-T5')],
+        widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
     )
     minTokens = forms.IntegerField(
-        required = False,
-        widget = forms.NumberInput(
-            attrs = {'class': 'form-control', 'placeholder': 'Min Tokens', 'id': 'id_minTokens'}),
-        min_value = 1
+        required=False,
+        widget=forms.NumberInput(
+            attrs={'class': 'form-control', 'placeholder': 'Min Tokens', 'id': 'id_minTokens'}),
+        min_value=1
     )
     maxTokens = forms.IntegerField(
-        required = False,
-        widget = forms.NumberInput(
-            attrs = {'class': 'form-control', 'placeholder': 'Max Tokens', 'id': 'id_maxTokens'}),
-        min_value = 1
+        required=False,
+        widget=forms.NumberInput(
+            attrs={'class': 'form-control', 'placeholder': 'Max Tokens', 'id': 'id_maxTokens'}),
+        min_value=1
     )
 
     def clean(self):
@@ -57,29 +57,29 @@ class SummarizationForm(forms.Form):
 
 class TranslationForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(
-            attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}
+        required=False,
+        widget=forms.FileInput(
+            attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}
         ),
-        validators = [
+        validators=[
             FileExtensionValidator(
-                allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])],
+                allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])],
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(
-            attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'}
+        required=False,
+        widget=forms.Textarea(
+            attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'}
         )
     )
     model = forms.ChoiceField(
-        choices = [('MBART', 'MBART')],
-        widget = forms.Select(
-            attrs = {'class': 'form-select'}
+        choices=[('MBART', 'MBART')],
+        widget=forms.Select(
+            attrs={'class': 'form-select'}
         )
     )
 
     langTTF = forms.ChoiceField(
-        choices = [
+        choices=[
             ("ar_AR", "Arabic"),
             ("cs_CZ", "Czech"),
             ("de_DE", "German"),
@@ -133,13 +133,13 @@ class TranslationForm(forms.Form):
             ("gl_ES", "Galician"),
             ("sl_SI", "Slovene")
         ],
-        widget = forms.Select(
-            attrs = {'class': 'form-select'}
+        widget=forms.Select(
+            attrs={'class': 'form-select'}
         )
     )
 
     langTTT = forms.ChoiceField(
-        choices = [
+        choices=[
             ("ar_AR", "Arabic"),
             ("cs_CZ", "Czech"),
             ("de_DE", "German"),
@@ -194,8 +194,8 @@ class TranslationForm(forms.Form):
             ("sl_SI", "Slovene")
         ]
         ,
-        widget = forms.Select(
-            attrs = {'class': 'form-select'}
+        widget=forms.Select(
+            attrs={'class': 'form-select'}
         )
     )
 
@@ -220,21 +220,21 @@ class TranslationForm(forms.Form):
 
 class QuestionForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
-        validators = [FileExtensionValidator(allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])]
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])]
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
     )
     model = forms.ChoiceField(
-        choices = [('ELECTRA', 'ELECTRA'), ('DISTILBERT', 'DISTILBERT'), ('ROBERTA', 'ROBERTA')],
-        widget = forms.Select(attrs = {'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
+        choices=[('ELECTRA', 'ELECTRA'), ('DISTILBERT', 'DISTILBERT'), ('ROBERTA', 'ROBERTA')],
+        widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
     )
     question = forms.CharField(
-        required = True,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 1, 'placeholder': 'Specify your question'})
+        required=True,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 1, 'placeholder': 'Specify your question'})
     )
 
     def clean(self):
@@ -254,17 +254,17 @@ class QuestionForm(forms.Form):
 
 class SentimentAnalysisForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
-        validators = [FileExtensionValidator(allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])]
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])]
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
     )
     model = forms.ChoiceField(
-        choices = [('FLAN-T5', 'FLAN-T5')],
-        widget = forms.Select(attrs = {'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
+        choices=[('FLAN-T5', 'FLAN-T5')],
+        widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
     )
 
     def clean(self):

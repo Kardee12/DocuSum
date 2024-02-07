@@ -24,4 +24,4 @@ urlpatterns = [
                   path("", include('sumApp.urls')),
                   path('accounts/', include('allauth.urls')),
                   path('accounts/', include('allauth.socialaccount.urls'))
-              ] + static(settings.STATIC_URL, document_root = settings.STATIC_ROOT)
+              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
