@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 
-from .views import normalViews, loginViews
+from .views import normalViews, loginViews, ragViews
 
 urlpatterns = [
                   path("", normalViews.index, name='index'),
@@ -16,7 +16,9 @@ urlpatterns = [
                   path('chat/', loginViews.chat_view, name='chat_view'),
                   path('processMessagesAndFiles/', loginViews.processMessagesAndFiles,
                        name='processMessagesAndFiles'),
+                  path('processMessagesAndFilesNew/', ragViews.processMessagesAndFilesNew,
+                       name='processMessagesAndFilesNew'),
                   path('clearChat/', loginViews.clearChat, name='clearChat'),
                   path('download/', loginViews.downloadFile, name='downloadFile'),
-                  path('test/',loginViews.test_view, name='test')
+                  path('test/',loginViews.testView, name='test')
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
