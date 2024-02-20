@@ -10,28 +10,30 @@ from decouple import config
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from langchain.chains import llm
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, AsyncChromiumLoader, JSONLoader, UnstructuredCSVLoader, \
-    TextLoader
+    TextLoader, PDFPlumberLoader, OnlinePDFLoader
 from langchain_community.document_transformers import Html2TextTransformer
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_community.vectorstores.utils import filter_complex_metadata
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from urlextract import URLExtract
 
 from sumApp.models import Document, ChatData
 from sumApp.utils.LLMAPIs import formatChatHistory, saveChatMessage
-from sumApp.views.loginViews import setRedis
+from langchain.memory import ChatMessageHistory
 
 load_dotenv()
 
 global retriever
+global vectorstore
 r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
 
@@ -45,6 +47,7 @@ def testView(request):
         avatar_url = social_account.extra_data.get('picture', None)
     return render(request, 'sumApp/Authenticated/new-chat.html', {'avatar_url': avatar_url, 'api_key': api_key})
 
+@never_cache
 @csrf_exempt
 @login_required
 def processMessagesAndFilesNew(request):
@@ -56,7 +59,7 @@ def processMessagesAndFilesNew(request):
     retriever = None
     extractor = URLExtract()
     urls = []
-    llm = ChatOpenAI(model_name="gpt-4-1106-preview", temperature=0)
+    llm = ChatOpenAI(model_name="gpt-4-1106-preview", temperature=0, api_key=config('OPENAI_API_KEY'))
     pages = None
     urls_in_message = []
     files_processed = []
@@ -75,10 +78,9 @@ def processMessagesAndFilesNew(request):
             urls_in_message = extractor.find_urls(message)
             for url in urls_in_message:
                 if ".pdf" in url:
-                    loader = PyPDFLoader(url, extract_images=True)
+                    loader = OnlinePDFLoader(url)
                     text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                     pages = loader.load_and_split(text_splitter)
-                    setRedis(pages, url)
                 else:
                     links = [url]
                     nest_asyncio.apply()
@@ -88,10 +90,8 @@ def processMessagesAndFilesNew(request):
                     docs_transformed = html2text.transform_documents(docs)
                     text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=0)
                     pages = text_splitter.split_documents(docs_transformed)
-                    setRedis(pages, url)
+                setRedis(pages, url)
 
-            chatHistory = ChatData.objects.filter(user=request.user).order_by('created_at')
-            history = formatChatHistory(chatHistory)
             document_counter_key = 'document_counter'
             document_count = int(r.get(document_counter_key) or 0)
             retrieved_documents = []
@@ -102,7 +102,6 @@ def processMessagesAndFilesNew(request):
                         doc_dict = json.loads(doc_json)
                         doc = langchain_core.documents.Document(page_content=doc_dict['page_content'],
                                                                 metadata=doc_dict['metadata'])
-                        print(doc)
                         retrieved_documents.append(doc)
                     else:
                         print(f"Document {idx} was not found in Redis.")
@@ -111,22 +110,33 @@ def processMessagesAndFilesNew(request):
                 pass
 
             retriever = None
+
             def contextFunction(question):
-                if(len(retrieved_documents)> 0):
-                    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 6})
-                    documents_info = 'The documents to be questioned on are: ...'
+                context_parts = []
+                if len(retrieved_documents) > 0:
+                    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 2})
                     retrieved_docs = retriever.get_relevant_documents(question)
-                    docs_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
-                    return f"{documents_info}\n\nHere is the conversation history:\n{history}\n\n{docs_context}"
-                else:
-                    return f"\nHere is the conversation history:\n{history}"
+                    for idx, doc in enumerate(retrieved_docs, start=0):
+                        doc_header = f"---Document {idx} ({doc.metadata['source']})---"
+                        doc_content = doc.page_content
+                        context_parts.append(f"{doc_header}\n{doc_content}")
+
+                chat_history_header = "---CONVERSATION HISTORY---"
+                chat_history_content = formatChatHistory(
+                ChatData.objects.filter(user=request.user).order_by('created_at'))
+                context_parts.append(f"{chat_history_header}\n{chat_history_content}")
+                final_context = "\n\n".join(context_parts)
+                print(final_context)
+                return final_context
 
             qa_system_prompt = """
                     You are an assistant for question-answering tasks and your name is DocuSum.
                     Use the following pieces of retrieved context to answer the question or help them perform tasks..
-                    If you don't know the answer, just say that you don't know.
                     Use three sentences maximum and keep the answer concise. Chat History is included in the context as well.
-                    If an user asks for chat history, you will only give the chat history and nothing else. Include the document source as well when you answer a question from a document.
+                    If an user asks for chat history, you will only give the chat history and nothing else.
+                    Include the document source as well when you answer a question from a document.
+                    If an user provides an URL, do not say you cannot access external content, since that URL would be transcribed into a document.
+                    When an user says to retrieve data from a document, use the document metadata to figure what document to retrieve it from.
                     {context}
                 """
             qa_prompt = ChatPromptTemplate.from_messages(
@@ -143,11 +153,12 @@ def processMessagesAndFilesNew(request):
                     | StrOutputParser()
 
             )
+
             aiResponse = rag_chain.invoke({"question": message})
+            print(aiResponse)
             saveChatMessage(request.user, message, is_question=True, is_ai=False)
             saveChatMessage(request.user, aiResponse, is_question=False, is_ai=True)
             response_data['api_response'] = aiResponse
-
             return JsonResponse(response_data)
 
     except Exception as e:
@@ -163,11 +174,14 @@ def extract_number_from_request(request_text):
 
 def processFiles(request, files):
     processed_files_metadata = []
+    summary = []
     for file_key, file in files.items():
         file = request.FILES[file_key]
+        print(file)
         origName = file.name
-        document = Document(name='tmp', file=file)
+        document = Document(name=origName, file=file)
         document.save()
+        sumText = ""
         if file.content_type == 'text/plain':
             with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                 for chunk in file.chunks():
@@ -176,7 +190,7 @@ def processFiles(request, files):
                 loader = TextLoader(temp_file.name, encoding='utf-8')
                 text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                 pages = loader.load_and_split(text_splitter)
-                setRedis(pages, document.name)
+                setRedis(pages, origName)
         if file.content_type == 'application/pdf':
             with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                 for chunk in file.chunks():
@@ -185,7 +199,7 @@ def processFiles(request, files):
                 loader = PyPDFLoader(temp_file.name, extract_images=True)
                 text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                 pages = loader.load_and_split(text_splitter)
-                setRedis(pages, document.name)
+                setRedis(pages, origName)
         if file.content_type == 'text/csv':
             with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                 for chunk in file.chunks():
@@ -196,7 +210,7 @@ def processFiles(request, files):
                 )
                 df = loader.load()
                 pages = filter_complex_metadata(df)
-                setRedis(pages, document.name)
+                setRedis(pages, origName)
         if file.content_type == 'application/json':
             with tempfile.NamedTemporaryFile(delete=True) as temp_file:
                 for chunk in file.chunks():
@@ -205,7 +219,7 @@ def processFiles(request, files):
                 loader = JSONLoader(temp_file, jq_schema='.')
                 text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                 pages = loader.load_and_split(text_splitter)
-                setRedis(pages, document.name)
+                setRedis(pages, origName)
         document.delete()
         processed_files_metadata.append({
             'original_name': origName,
@@ -213,15 +227,19 @@ def processFiles(request, files):
         })
     return processed_files_metadata
 
-def setRedis(pages, file_names):
+def setRedis(pages, file_name_or_title):
     document_counter_key = 'document_counter'
     current_count = int(r.get(document_counter_key) or 0)
 
-    for idx, (doc, file_name) in enumerate(zip(pages, file_names), start=current_count):
+    for idx, page in enumerate(pages, start=current_count):
+        metadata = {
+            'source': file_name_or_title,
+            'page': idx - current_count + 1
+        }
+
         doc_dict = {
-            'page_content': doc.page_content,
-            'metadata': doc.metadata,
-            'file_name': file_name
+            'page_content': page.page_content,
+            'metadata': metadata
         }
         r.set(f'document:{idx}', json.dumps(doc_dict))
         r.incr(document_counter_key)
@@ -231,3 +249,19 @@ def extract_document_name_from_request(request_text):
     if match:
         return match.group(2)  # Returns the name of the document
     return None
+
+
+
+@csrf_exempt
+@login_required
+def clearChat(request):
+    if request.method == 'POST':
+        r.flushall()
+        ChatData.objects.filter(user=request.user).delete()
+        conv_history = ChatData.objects.filter(user=request.user)
+        context = "Previous Chat history has been cleared. Everything is now new after this line\n"
+        context += ",".join([content.content for content in conv_history])
+        print('New history is {' + str(context) + '}')
+        retriever = None
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
