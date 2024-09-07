@@ -200,6 +200,16 @@
                         <polyline points="21 21 21 11 11 11"></polyline>
                     </svg>
                 </label>
+                <button id="record-btn" class="record-btn">
+                    <svg class="record-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333">
+                        <svg class="record-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333">
+                            <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 1 1-8 0V5a4 4 0 0 1 4-4z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </svg>
+                </button>
                 <input id="file-upload" type="file" multiple hidden>
                 <input type="text" placeholder="Message DocuSum..." id="chat-input" class="form-control"/>
                 <button onclick="sendMessage()">
@@ -226,12 +236,12 @@
             let selectedFiles = [];
             input.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault(); 
+                    e.preventDefault();
                     sendMessage();
                 }
             });
             function updateFilePreviews() {
-                selectedFilesContainer.innerHTML = ''; 
+                selectedFilesContainer.innerHTML = '';
                 selectedFiles.forEach((file, index) => {
                     const filePreview = document.createElement('div');
                     filePreview.classList.add('file-preview');
@@ -258,7 +268,7 @@
                     removeButton.textContent = 'close';
                     removeButton.addEventListener('click', function () {
                         selectedFiles.splice(index, 1);
-                        updateFilePreviews(); 
+                        updateFilePreviews();
                     });
                     filePreview.appendChild(removeButton);
 
@@ -269,7 +279,7 @@
             fileInput.addEventListener('change', function () {
                 selectedFiles.push(...this.files);
                 selectedFiles = Array.from(this.files);
-                updateFilePreviews(); 
+                updateFilePreviews();
             });
             window.sendMessage = function () {
                 const message = input.value.trim();
@@ -277,23 +287,23 @@
                     console.log("No message or files to send.");
                     return;
                 }
-            
+
                 // Immediately display the message in the UI
                 if (message) {
                     appendMessage("You", message, "user-message");
-                    input.value ="";
+                    input.value = "";
                 }
-            
+
                 // Disable the input and send button to prevent multiple sends
                 input.disabled = true;
                 document.querySelector('button[onclick="sendMessage()"]').disabled = true;
-            
+
                 let formData = new FormData();
                 formData.append('message', message);
                 selectedFiles.forEach((file, index) => {
                     formData.append('file' + index, file);
                 });
-            
+
                 $.ajax({
                     url: "{% url 'processMessagesAndFilesNew' %}",
                     type: "POST",
@@ -311,7 +321,7 @@
                     error: function (error) {
                         console.error("Error:", error);
                     },
-                    complete: function() {
+                    complete: function () {
                         // Re-enable the input and send button regardless of success or error
                         input.disabled = false;
                         document.querySelector('button[onclick="sendMessage()"]').disabled = false;
@@ -328,14 +338,14 @@
                 } else {
                     messageBubble.classList.add("ai-response");
                 }
-                
+
 
                 const messageContent = document.createElement("div");
                 messageContent.classList.add("message-content");
 
                 const senderName = document.createElement("strong");
                 senderName.textContent = sender;
-                senderName.style.color = "#000"; 
+                senderName.style.color = "#000";
 
                 const messageText = document.createElement("div");
                 messageText.classList.add("message-text");

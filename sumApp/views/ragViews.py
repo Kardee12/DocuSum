@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import tempfile
 
@@ -13,22 +14,20 @@ from django.shortcuts import render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
-from langchain.chains import llm
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, AsyncChromiumLoader, JSONLoader, UnstructuredCSVLoader, \
-    TextLoader, PDFPlumberLoader, OnlinePDFLoader
+    TextLoader, OnlinePDFLoader
 from langchain_community.document_transformers import Html2TextTransformer
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_community.vectorstores.utils import filter_complex_metadata
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables import RunnablePassthrough, RunnableParallel
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from urlextract import URLExtract
 
 from sumApp.models import Document, ChatData
 from sumApp.utils.LLMAPIs import formatChatHistory, saveChatMessage
-from langchain.memory import ChatMessageHistory
 
 load_dotenv()
 
@@ -36,16 +35,15 @@ global retriever
 global vectorstore
 r = redis.Redis(host='localhost', port=6379, decode_responses=True)
 
-
 @login_required
-def testView(request):
+def chatView(request):
     api_key = config('OPENAI_API_KEY')
     social_account = SocialAccount.objects.filter(user=request.user).first()
     avatar_url = None
     if social_account:
-        # Assuming the profile picture URL is stored under 'picture' in the extra_data
         avatar_url = social_account.extra_data.get('picture', None)
     return render(request, 'sumApp/Authenticated/new-chat.html', {'avatar_url': avatar_url, 'api_key': api_key})
+
 
 @never_cache
 @csrf_exempt
@@ -74,7 +72,7 @@ def processMessagesAndFilesNew(request):
     try:
         print(message)
         if message:
-            #Check if message contains link to parse
+            # Check if message contains link to parse
             urls_in_message = extractor.find_urls(message)
             for url in urls_in_message:
                 if ".pdf" in url:
@@ -108,7 +106,6 @@ def processMessagesAndFilesNew(request):
                     vectorstore = Chroma.from_documents(documents=retrieved_documents, embedding=OpenAIEmbeddings())
             else:
                 pass
-
             retriever = None
 
             def contextFunction(question):
@@ -123,7 +120,7 @@ def processMessagesAndFilesNew(request):
 
                 chat_history_header = "---CONVERSATION HISTORY---"
                 chat_history_content = formatChatHistory(
-                ChatData.objects.filter(user=request.user).order_by('created_at'))
+                    ChatData.objects.filter(user=request.user).order_by('created_at'))
                 context_parts.append(f"{chat_history_header}\n{chat_history_content}")
                 final_context = "\n\n".join(context_parts)
                 print(final_context)
@@ -136,7 +133,8 @@ def processMessagesAndFilesNew(request):
                     If an user asks for chat history, you will only give the chat history and nothing else.
                     Include the document source as well when you answer a question from a document.
                     If an user provides an URL, do not say you cannot access external content, since that URL would be transcribed into a document.
-                    When an user says to retrieve data from a document, use the document metadata to figure what document to retrieve it from.
+                    When an user says to retrieve data from a document, use the document metadata name to figure what document to retrieve it from.
+                    When an user says to retrieve date from multiple documents by the name of their pdf, use data from both documents.
                     {context}
                 """
             qa_prompt = ChatPromptTemplate.from_messages(
@@ -145,7 +143,6 @@ def processMessagesAndFilesNew(request):
                     ("human", "{question}"),
                 ]
             )
-
             rag_chain = (
                     RunnablePassthrough.assign(context=lambda x: contextFunction(x["question"]))
                     | qa_prompt
@@ -153,7 +150,6 @@ def processMessagesAndFilesNew(request):
                     | StrOutputParser()
 
             )
-
             aiResponse = rag_chain.invoke({"question": message})
             print(aiResponse)
             saveChatMessage(request.user, message, is_question=True, is_ai=False)
@@ -164,6 +160,7 @@ def processMessagesAndFilesNew(request):
     except Exception as e:
         print(f"An error occurred: {e}")
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
 
 def extract_number_from_request(request_text):
     match = re.search(r"last (\d+) documents", request_text)
@@ -220,12 +217,15 @@ def processFiles(request, files):
                 text_splitter = CharacterTextSplitter(chunk_size=512, chunk_overlap=200)
                 pages = loader.load_and_split(text_splitter)
                 setRedis(pages, origName)
-        document.delete()
+        file_path = document.file.path
+        if os.path.isfile(file_path):
+            os.remove(file_path)
         processed_files_metadata.append({
             'original_name': origName,
             'document_name': file.name,
         })
     return processed_files_metadata
+
 
 def setRedis(pages, file_name_or_title):
     document_counter_key = 'document_counter'
@@ -243,14 +243,6 @@ def setRedis(pages, file_name_or_title):
         }
         r.set(f'document:{idx}', json.dumps(doc_dict))
         r.incr(document_counter_key)
-
-def extract_document_name_from_request(request_text):
-    match = re.search(r"document (named|called) (\w+)", request_text, re.IGNORECASE)
-    if match:
-        return match.group(2)  # Returns the name of the document
-    return None
-
-
 
 @csrf_exempt
 @login_required

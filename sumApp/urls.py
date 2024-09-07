@@ -13,12 +13,9 @@ urlpatterns = [
                   path('logout/', loginViews.logoutView, name='logout'),
                   path("editor", loginViews.editor, name='editor'),
                   path("dashboard/", loginViews.dashboard, name='dashboard'),
-                  path('chat/', loginViews.chat_view, name='chat_view'),
-                  path('processMessagesAndFiles/', loginViews.processMessagesAndFiles,
-                       name='processMessagesAndFiles'),
                   path('processMessagesAndFilesNew/', ragViews.processMessagesAndFilesNew,
                        name='processMessagesAndFilesNew'),
                   path('clearChat/', loginViews.clearChat, name='clearChat'),
                   path('download/', loginViews.downloadFile, name='downloadFile'),
-                  path('test/',loginViews.testView, name='test')
+                  path('chat/',ragViews.chatView, name='chat')
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
