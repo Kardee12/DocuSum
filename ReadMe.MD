@@ -39,6 +39,29 @@ Docusum is built on a modern tech stack designed for scalability, flexibility, a
 
 - **LangChain**: Docusum leverages LangChain for building and managing LLM-powered applications. LangChain provides tools to facilitate prompt engineering, document parsing, and LLM integration, streamlining the workflow for developers.
 
+## Future Vision
+
+While Docusum already offers a wide array of features, we envision it becoming an even more powerful and transformative tool in the world of education and research. Our ideal future goals for Docusum include:
+
+1. **Real-Time Document Collaboration**  
+   We aim to add real-time collaboration features that allow multiple users to simultaneously interact with and edit documents, powered by LLMs. This would enable group learning, co-authoring research papers, and interactive tutoring, where LLMs can guide discussions or provide feedback in real time.
+
+2. **Adaptive Learning and Research Recommendations**  
+   Docusum could evolve into an adaptive learning platform, where it not only answers questions but also identifies gaps in students' knowledge and recommends tailored research materials, exercises, or resources based on their interactions with the platform.
+
+3. **Multimodal Learning Experiences**  
+   Beyond text-to-video, we aim to integrate more advanced multimodal learning experiences, combining audio, video, and interactive diagrams. By leveraging AI, we want to turn static documents into dynamic, engaging learning tools that adapt to each user’s needs.
+
+4. **Seamless Integration with Popular Educational Platforms**  
+   We envision Docusum seamlessly integrating with popular educational tools like Canvas. This would allow educators and students to incorporate Docusum’s features directly into their existing workflows, making it even more useful and accessible.
+
+5. **AI-Powered Research Insights**  
+   In the future, Docusum could be enhanced to provide deeper insights, like automatically generating hypotheses from research papers or identifying potential errors and contradictions in documents. This could drastically accelerate the research process, empowering both novice and experienced researchers.
+
+6. **Open-Source Community and Model Sharing**  
+   We aim to foster an open-source community around Docusum, where users can share and collaborate on custom LLM models, document workflows, and educational tools. This would create a thriving ecosystem where students, educators, and researchers can continuously improve the platform.
+
+
 ## Roadmap & TODOs
 
 The platform is under continuous development with exciting new features and improvements in the pipeline. Here are the key tasks on the roadmap:
@@ -69,3 +92,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Contact
 
 For questions or further information, feel free to reach out via karthik.manishankar@sjsu.edu
+ - Additional Contacts will be added shortly
