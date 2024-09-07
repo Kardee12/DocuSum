@@ -1,22 +1,31 @@
+import os
 import tempfile
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from tika import parser
+
 import textract
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
+os.environ['TIKA_SERVER_JAR'] = 'https://repo1.maven.org/maven2/org/apache/tika/tika-server/1.19.1/tika-server-1.19.1.jar'
+from tika import parser
+import fitz
 from sumApp.utils.HuggingFaceAPIs import huggingFaceAPis
 
 
 class TextExtractor:
     def extract(self, file):
         if isinstance(file, InMemoryUploadedFile):
-            with tempfile.NamedTemporaryFile(delete = False) as temp_file:
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                 temp_file.write(file.read())
                 if file.name.endswith('.pdf'):
-                    pdf = parser.from_file(temp_file.name)
-                    text = pdf['content']
+                    document = fitz.open(temp_file.name)
+                    text = ""
+                    for page_num in range(len(document)):
+                        page = document.load_page(page_num)
+                        text += page.get_text()
+                    document.close()
                 elif file.name.endswith('.docx'):
                     text = textract.process(temp_file.name)
                 else:
-                    text = file.read().decode('utf-8', errors = 'ignore')
+                    text = file.read().decode('utf-8', errors='ignore')
         else:
             raise FileNotFoundError
         return text.strip()
@@ -49,7 +58,7 @@ class TextTranslation:
         output = hFace.transQuery(model, text, langTTF, langTTT)
         print(langTTF)
         print(output)
-        result = output[0]['generated_text']
+        result = output[0]['translation_text']
         print(result)
         return result
 
@@ -61,14 +70,12 @@ class QuestionAnswering:
         hFace = huggingFaceAPis()
         output = hFace.askQuery(model, text, question)
         print(output)
-        output = output['answer']
         return output
 
-class SentimentAnalysis:
 
+class SentimentAnalysis:
     def pickModel(self, model_name, text):
         model = model_name.upper()
         hFace = huggingFaceAPis()
         output = hFace.sentimentQuery(model, text)
-        output = output[0]['generated_text']
         return output

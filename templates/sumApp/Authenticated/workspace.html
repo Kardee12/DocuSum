@@ -1,5 +1,6 @@
-{% extends "sumApp/base.html" %}
+{% extends 'sumApp/Authenticated/authenticated_base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}Workspace - DocuSum{% endblock %}
 
@@ -45,7 +46,10 @@
                                                 type="submit" name="action" value="summarize">Summarize
                                         </button>
                                         <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
-                                                type="button">Download
+                                                type="button"
+                                                onclick="location.href='{% url 'downloadFile' %}'"
+                                                {% if not request.session.actionCompleted %}disabled{% endif %}>
+                                            Download
                                         </button>
                                     </div>
                                 </form>
@@ -100,7 +104,10 @@
                                                 type="submit" name="action" value="translate">Translate
                                         </button>
                                         <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
-                                                type="button">Download
+                                                type="button"
+                                                onclick="location.href='{% url 'downloadFile' %}'"
+                                                {% if not request.session.actionCompleted %}disabled{% endif %}>
+                                            Download
                                         </button>
                                     </div>
                                 </form>
@@ -152,7 +159,10 @@
                                                 type="submit" name="action" value="ask">Ask
                                         </button>
                                         <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
-                                                type="button">Download
+                                                type="button"
+                                                onclick="location.href='{% url 'downloadFile' %}'"
+                                                {% if not request.session.actionCompleted %}disabled{% endif %}>
+                                            Download
                                         </button>
                                     </div>
                                 </form>
@@ -203,8 +213,14 @@
                                         <button class="btn btn-outline-primary border-0 pe-3 ps-3 pt-2 pb-2"
                                                 type="submit" name="action" value="sentiment">Submit
                                         </button>
+                                        {#                                        <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"#}
+                                        {#                                                onclick="location.href='{% url 'downloadFile' %}'">Download#}
+                                        {#                                        </button>#}
                                         <button class="btn btn-outline-success border-0 pe-3 ps-3 pt-2 pb-2"
-                                                type="button">Download
+                                                type="button"
+                                                onclick="location.href='{% url 'downloadFile' %}'"
+                                                {% if not request.session.actionCompleted %}disabled{% endif %}>
+                                            Download
                                         </button>
                                     </div>
                                 </form>
@@ -241,6 +257,10 @@
                 </div>
             </div>
         </div>
+        <form method="post" id="downloadForm" style="display:none;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="download">
+        </form>
     </div>
     {% block scripts %}
         <script>
@@ -259,8 +279,7 @@
                     toggleAccordion('collapse' + lastActiveAccordion.charAt(0).toUpperCase() + lastActiveAccordion.slice(1));
                 }
             });
-        </script>
-        <script>
+
             function handleModelChange() {
                 var modelSelect = document.getElementById("id_model");
                 var minTokensInput = document.getElementById("id_minTokens");
@@ -276,6 +295,11 @@
 
             document.getElementById("id_model").addEventListener('change', handleModelChange);
             document.addEventListener('DOMContentLoaded', handleModelChange);
+
+            function downloadContent() {
+                console.log('Download button clicked');
+                document.getElementById('downloadForm').submit();
+            }
         </script>
     {% endblock %}
 {% endblock %}

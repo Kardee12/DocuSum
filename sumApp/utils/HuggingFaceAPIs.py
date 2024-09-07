@@ -21,9 +21,16 @@ class huggingFaceAPis:
 
     def transQuery(self, model, text, langTTF, langTTT):
         APIURL, modelKey = self.helper.base(model)
+        src_lang_code = langTTF
+        tgt_lang_code = langTTT
         payload = {
-            "inputs": f"Translate from {langTTF} to {langTTT}: {text}"
+            "inputs": text,
+            "parameters": {
+                "src_lang": src_lang_code,
+                "tgt_lang": tgt_lang_code
+            }
         }
+        print(payload)
         print("DONE")
         return self.helper.closure(APIURL, payload)
 
@@ -35,6 +42,8 @@ class huggingFaceAPis:
                 "context": text
             }
         }
+
+        print(payload)
         return self.helper.closure(APIURL, payload)
 
     def sentimentQuery(self, model, text):

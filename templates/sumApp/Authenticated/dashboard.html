@@ -1,0 +1,133 @@
+{% extends 'sumApp/Authenticated/authenticated_base.html' %}
+{% load static %}
+{% load socialaccount %}
+
+{% block content %}
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+
+        .rounded-15px {
+            border-radius: 15px;
+        }
+
+        .shadow {
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+        }
+
+        .module-card {
+            background-color: #ffffff;
+            border: none;
+            transition: transform .2s;
+        }
+
+        .module-card:hover {
+            transform: scale(1.05);
+        }
+
+        .search-bar {
+            margin-bottom: 1rem;
+        }
+
+        .module-card .card-body {
+            min-height: 190px; /* Adjust the min-height as necessary */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* You may also want to ensure that the buttons align at the bottom */
+        .module-card .card-body a.btn {
+            margin-top: auto;
+        }
+
+    </style>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 mb-4 mt-lg-5">
+                <h2 class="float-left"><strong>Welcome Back, {{ user.first_name|default:user.first_name }}!</strong>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Module Cards -->
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card module-card shadow rounded-15px">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Summarize</h5>
+                        <p class="card-text">Create a workspace for summarization.</p>
+                        <a href="#" class="btn btn-primary rounded-15px">Create</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card module-card shadow rounded-15px">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Sentiment Analysis</h5>
+                        <p class="card-text">Create a workspace for sentiment analysis.</p>
+                        <a href="#" class="btn btn-primary rounded-15px">Create</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card module-card shadow rounded-15px">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Translation</h5>
+                        <p class="card-text">Create a workspace for translation.</p>
+                        <a href="#" class="btn btn-primary rounded-15px">Create</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card module-card shadow rounded-15px">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Question Answering</h5>
+                        <p class="card-text">Create a workspace for question Answering.</p>
+                        <a href="#" class="btn btn-primary rounded-15px">Create</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repeat for each module -->
+        </div>
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card module-card shadow rounded-15px">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Retrieval-Augmented-Generation</h5>
+                        <p class="card-text">Do something.</p>
+                        <a href="#" class="btn btn-primary rounded-15px">Create</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Workspace Table -->
+        <div class="row">
+            <div class="col">
+                <div class="card shadow rounded-15px">
+                    <div class="card-body">
+                        <input type="text" class="form-control search-bar rounded-25px"
+                               placeholder="Search workspaces...">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Last Modified</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Workspace rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

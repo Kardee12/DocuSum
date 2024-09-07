@@ -4,29 +4,29 @@ from django.core.validators import FileExtensionValidator
 
 class SummarizationForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
-        validators = [FileExtensionValidator(allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])]
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])]
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
     )
     model = forms.ChoiceField(
-        choices = [('BART', 'BART'), ('FLAN-T5', 'FLAN-T5')],
-        widget = forms.Select(attrs = {'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
+        choices=[('BART', 'BART'), ('FLAN-T5', 'FLAN-T5')],
+        widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
     )
     minTokens = forms.IntegerField(
-        required = False,
-        widget = forms.NumberInput(
-            attrs = {'class': 'form-control', 'placeholder': 'Min Tokens', 'id': 'id_minTokens'}),
-        min_value = 1
+        required=False,
+        widget=forms.NumberInput(
+            attrs={'class': 'form-control', 'placeholder': 'Min Tokens', 'id': 'id_minTokens'}),
+        min_value=1
     )
     maxTokens = forms.IntegerField(
-        required = False,
-        widget = forms.NumberInput(
-            attrs = {'class': 'form-control', 'placeholder': 'Max Tokens', 'id': 'id_maxTokens'}),
-        min_value = 1
+        required=False,
+        widget=forms.NumberInput(
+            attrs={'class': 'form-control', 'placeholder': 'Max Tokens', 'id': 'id_maxTokens'}),
+        min_value=1
     )
 
     def clean(self):
@@ -57,160 +57,145 @@ class SummarizationForm(forms.Form):
 
 class TranslationForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(
-            attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}
+        required=False,
+        widget=forms.FileInput(
+            attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}
         ),
-        validators = [
+        validators=[
             FileExtensionValidator(
-                allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])],
+                allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])],
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(
-            attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'}
+        required=False,
+        widget=forms.Textarea(
+            attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'}
         )
     )
     model = forms.ChoiceField(
-        choices = [('FLAN-T5', 'FLAN-T5')],
-        widget = forms.Select(
-            attrs = {'class': 'form-select'}
+        choices=[('MBART', 'MBART')],
+        widget=forms.Select(
+            attrs={'class': 'form-select'}
         )
     )
 
     langTTF = forms.ChoiceField(
-        choices = [
-            ('English', 'English'),
-            ('Spanish', 'Spanish'),
-            ('Japanese', 'Japanese'),
-            ('Persian', 'Persian'),
-            ('Hindi', 'Hindi'),
-            ('French', 'French'),
-            ('Chinese', 'Chinese'),
-            ('Bengali', 'Bengali'),
-            ('Gujarati', 'Gujarati'),
-            ('German', 'German'),
-            ('Telugu', 'Telugu'),
-            ('Italian', 'Italian'),
-            ('Arabic', 'Arabic'),
-            ('Polish', 'Polish'),
-            ('Tamil', 'Tamil'),
-            ('Marathi', 'Marathi'),
-            ('Malayalam', 'Malayalam'),
-            ('Oriya', 'Oriya'),
-            ('Panjabi', 'Panjabi'),
-            ('Portuguese', 'Portuguese'),
-            ('Urdu', 'Urdu'),
-            ('Galician', 'Galician'),
-            ('Hebrew', 'Hebrew'),
-            ('Korean', 'Korean'),
-            ('Catalan', 'Catalan'),
-            ('Thai', 'Thai'),
-            ('Dutch', 'Dutch'),
-            ('Indonesian', 'Indonesian'),
-            ('Vietnamese', 'Vietnamese'),
-            ('Bulgarian', 'Bulgarian'),
-            ('Filipino', 'Filipino'),
-            ('Central Khmer', 'Central Khmer'),
-            ('Lao', 'Lao'),
-            ('Turkish', 'Turkish'),
-            ('Russian', 'Russian'),
-            ('Croatian', 'Croatian'),
-            ('Swedish', 'Swedish'),
-            ('Yoruba', 'Yoruba'),
-            ('Kurdish', 'Kurdish'),
-            ('Burmese', 'Burmese'),
-            ('Malay', 'Malay'),
-            ('Czech', 'Czech'),
-            ('Finnish', 'Finnish'),
-            ('Somali', 'Somali'),
-            ('Tagalog', 'Tagalog'),
-            ('Swahili', 'Swahili'),
-            ('Sinhala', 'Sinhala'),
-            ('Kannada', 'Kannada'),
-            ('Zhuang', 'Zhuang'),
-            ('Igbo', 'Igbo'),
-            ('Xhosa', 'Xhosa'),
-            ('Romanian', 'Romanian'),
-            ('Haitian', 'Haitian'),
-            ('Estonian', 'Estonian'),
-            ('Slovak', 'Slovak'),
-            ('Lithuanian', 'Lithuanian'),
-            ('Greek', 'Greek'),
-            ('Nepali', 'Nepali'),
-            ('Assamese', 'Assamese'),
-            ('Norwegian', 'Norwegian')
+        choices=[
+            ("ar_AR", "Arabic"),
+            ("cs_CZ", "Czech"),
+            ("de_DE", "German"),
+            ("en_XX", "English"),
+            ("es_XX", "Spanish"),
+            ("et_EE", "Estonian"),
+            ("fi_FI", "Finnish"),
+            ("fr_XX", "French"),
+            ("gu_IN", "Gujarati"),
+            ("hi_IN", "Hindi"),
+            ("it_IT", "Italian"),
+            ("ja_XX", "Japanese"),
+            ("kk_KZ", "Kazakh"),
+            ("ko_KR", "Korean"),
+            ("lt_LT", "Lithuanian"),
+            ("lv_LV", "Latvian"),
+            ("my_MM", "Burmese"),
+            ("ne_NP", "Nepali"),
+            ("nl_XX", "Dutch"),
+            ("ro_RO", "Romanian"),
+            ("ru_RU", "Russian"),
+            ("si_LK", "Sinhala"),
+            ("tr_TR", "Turkish"),
+            ("vi_VN", "Vietnamese"),
+            ("zh_CN", "Chinese"),
+            ("af_ZA", "Afrikaans"),
+            ("az_AZ", "Azerbaijani"),
+            ("bn_IN", "Bengali"),
+            ("fa_IR", "Persian"),
+            ("he_IL", "Hebrew"),
+            ("hr_HR", "Croatian"),
+            ("id_ID", "Indonesian"),
+            ("ka_GE", "Georgian"),
+            ("km_KH", "Khmer"),
+            ("mk_MK", "Macedonian"),
+            ("ml_IN", "Malayalam"),
+            ("mn_MN", "Mongolian"),
+            ("mr_IN", "Marathi"),
+            ("pl_PL", "Polish"),
+            ("ps_AF", "Pashto"),
+            ("pt_XX", "Portuguese"),
+            ("sv_SE", "Swedish"),
+            ("sw_KE", "Swahili"),
+            ("ta_IN", "Tamil"),
+            ("te_IN", "Telugu"),
+            ("th_TH", "Thai"),
+            ("tl_XX", "Tagalog"),
+            ("uk_UA", "Ukrainian"),
+            ("ur_PK", "Urdu"),
+            ("xh_ZA", "Xhosa"),
+            ("gl_ES", "Galician"),
+            ("sl_SI", "Slovene")
         ],
-        widget = forms.Select(
-            attrs = {'class': 'form-select'}
+        widget=forms.Select(
+            attrs={'class': 'form-select'}
         )
     )
 
     langTTT = forms.ChoiceField(
-        choices = [
-            ('English', 'English'),
-            ('Spanish', 'Spanish'),
-            ('Japanese', 'Japanese'),
-            ('Persian', 'Persian'),
-            ('Hindi', 'Hindi'),
-            ('French', 'French'),
-            ('Chinese', 'Chinese'),
-            ('Bengali', 'Bengali'),
-            ('Gujarati', 'Gujarati'),
-            ('German', 'German'),
-            ('Telugu', 'Telugu'),
-            ('Italian', 'Italian'),
-            ('Arabic', 'Arabic'),
-            ('Polish', 'Polish'),
-            ('Tamil', 'Tamil'),
-            ('Marathi', 'Marathi'),
-            ('Malayalam', 'Malayalam'),
-            ('Oriya', 'Oriya'),
-            ('Panjabi', 'Panjabi'),
-            ('Portuguese', 'Portuguese'),
-            ('Urdu', 'Urdu'),
-            ('Galician', 'Galician'),
-            ('Hebrew', 'Hebrew'),
-            ('Korean', 'Korean'),
-            ('Catalan', 'Catalan'),
-            ('Thai', 'Thai'),
-            ('Dutch', 'Dutch'),
-            ('Indonesian', 'Indonesian'),
-            ('Vietnamese', 'Vietnamese'),
-            ('Bulgarian', 'Bulgarian'),
-            ('Filipino', 'Filipino'),
-            ('Central Khmer', 'Central Khmer'),
-            ('Lao', 'Lao'),
-            ('Turkish', 'Turkish'),
-            ('Russian', 'Russian'),
-            ('Croatian', 'Croatian'),
-            ('Swedish', 'Swedish'),
-            ('Yoruba', 'Yoruba'),
-            ('Kurdish', 'Kurdish'),
-            ('Burmese', 'Burmese'),
-            ('Malay', 'Malay'),
-            ('Czech', 'Czech'),
-            ('Finnish', 'Finnish'),
-            ('Somali', 'Somali'),
-            ('Tagalog', 'Tagalog'),
-            ('Swahili', 'Swahili'),
-            ('Sinhala', 'Sinhala'),
-            ('Kannada', 'Kannada'),
-            ('Zhuang', 'Zhuang'),
-            ('Igbo', 'Igbo'),
-            ('Xhosa', 'Xhosa'),
-            ('Romanian', 'Romanian'),
-            ('Haitian', 'Haitian'),
-            ('Estonian', 'Estonian'),
-            ('Slovak', 'Slovak'),
-            ('Lithuanian', 'Lithuanian'),
-            ('Greek', 'Greek'),
-            ('Nepali', 'Nepali'),
-            ('Assamese', 'Assamese'),
-            ('Norwegian', 'Norwegian')
-        ],
-        widget = forms.Select(
-            attrs = {'class': 'form-select'}
+        choices=[
+            ("ar_AR", "Arabic"),
+            ("cs_CZ", "Czech"),
+            ("de_DE", "German"),
+            ("en_XX", "English"),
+            ("es_XX", "Spanish"),
+            ("et_EE", "Estonian"),
+            ("fi_FI", "Finnish"),
+            ("fr_XX", "French"),
+            ("gu_IN", "Gujarati"),
+            ("hi_IN", "Hindi"),
+            ("it_IT", "Italian"),
+            ("ja_XX", "Japanese"),
+            ("kk_KZ", "Kazakh"),
+            ("ko_KR", "Korean"),
+            ("lt_LT", "Lithuanian"),
+            ("lv_LV", "Latvian"),
+            ("my_MM", "Burmese"),
+            ("ne_NP", "Nepali"),
+            ("nl_XX", "Dutch"),
+            ("ro_RO", "Romanian"),
+            ("ru_RU", "Russian"),
+            ("si_LK", "Sinhala"),
+            ("tr_TR", "Turkish"),
+            ("vi_VN", "Vietnamese"),
+            ("zh_CN", "Chinese"),
+            ("af_ZA", "Afrikaans"),
+            ("az_AZ", "Azerbaijani"),
+            ("bn_IN", "Bengali"),
+            ("fa_IR", "Persian"),
+            ("he_IL", "Hebrew"),
+            ("hr_HR", "Croatian"),
+            ("id_ID", "Indonesian"),
+            ("ka_GE", "Georgian"),
+            ("km_KH", "Khmer"),
+            ("mk_MK", "Macedonian"),
+            ("ml_IN", "Malayalam"),
+            ("mn_MN", "Mongolian"),
+            ("mr_IN", "Marathi"),
+            ("pl_PL", "Polish"),
+            ("ps_AF", "Pashto"),
+            ("pt_XX", "Portuguese"),
+            ("sv_SE", "Swedish"),
+            ("sw_KE", "Swahili"),
+            ("ta_IN", "Tamil"),
+            ("te_IN", "Telugu"),
+            ("th_TH", "Thai"),
+            ("tl_XX", "Tagalog"),
+            ("uk_UA", "Ukrainian"),
+            ("ur_PK", "Urdu"),
+            ("xh_ZA", "Xhosa"),
+            ("gl_ES", "Galician"),
+            ("sl_SI", "Slovene")
+        ]
+        ,
+        widget=forms.Select(
+            attrs={'class': 'form-select'}
         )
     )
 
@@ -235,21 +220,21 @@ class TranslationForm(forms.Form):
 
 class QuestionForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
-        validators = [FileExtensionValidator(allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])]
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])]
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
     )
     model = forms.ChoiceField(
-        choices = [('ELECTRA', 'ELECTRA'), ('DISTILBERT', 'DISTILBERT'), ('ROBERTA', 'ROBERTA')],
-        widget = forms.Select(attrs = {'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
+        choices=[('ELECTRA', 'ELECTRA'), ('DISTILBERT', 'DISTILBERT'), ('ROBERTA', 'ROBERTA')],
+        widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
     )
     question = forms.CharField(
-        required = True,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 1, 'placeholder': 'Specify your question'})
+        required=True,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 1, 'placeholder': 'Specify your question'})
     )
 
     def clean(self):
@@ -269,17 +254,17 @@ class QuestionForm(forms.Form):
 
 class SentimentAnalysisForm(forms.Form):
     uploadFile = forms.FileField(
-        required = False,
-        widget = forms.FileInput(attrs = {'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
-        validators = [FileExtensionValidator(allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'csv'])]
+        required=False,
+        widget=forms.FileInput(attrs={'class': 'form-control', 'accept': '.txt,.csv,.docx,.doc,.pdf'}),
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx', 'txt', 'csv'])]
     )
     textInput = forms.CharField(
-        required = False,
-        widget = forms.Textarea(attrs = {'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Paste your text here'})
     )
     model = forms.ChoiceField(
-        choices = [('FLAN-T5', 'FLAN-T5')],
-        widget = forms.Select(attrs = {'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
+        choices=[('FLAN-T5', 'FLAN-T5')],
+        widget=forms.Select(attrs={'class': 'form-select', 'onchange': 'handleModelChange()', 'id': 'id_model'})
     )
 
     def clean(self):

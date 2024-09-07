@@ -1,0 +1,32 @@
+/* Google Button Styles */
+.btn-google {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 8px 12px; /* Reduced padding */
+    margin: 5px 0;
+    transition: background-color 0.3s;
+    display: inline-block;
+    align-items: center;
+    border-radius: 4px; /* This gives the button rounded corners */
+    font-size: 0.9em; /* Optionally reduce font size */
+}
+
+.btn-google .google-logo {
+    width: 18px; /* Optionally reduce logo size */
+    margin-right: 8px; /* Adjust margin accordingly */
+    vertical-align: middle;
+}
+
+.btn-google:hover, .btn-google:focus {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Fix alignment issues on small screens */
+@media (max-width: 768px) {
+    .btn-google {
+        display: flex;
+        justify-content: center;
+    }
+}
